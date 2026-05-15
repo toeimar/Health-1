@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BizFlow - Enterprise Accounting</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* 🌙 Dark Theme (Default) */
+            --bg: #09090b; --surface: #13141a; --card: #1c1d26; --border: #2f3342;
+            --accent: #0ea5e9; --accentSoft: #0ea5e920; --accentHover: #38bdf8;
+            --green: #10b981; --greenSoft: #10b98118;
+            --yellow: #f59e0b; --yellowSoft: #f59e0b18;
+            --teal: #0d9488; --tealSoft: #0d948818; 
+            --orange: #f97316; --orangeSoft: #f9731618;
+            --purple: #8b5cf6; --purpleSoft: #8b5cf618;
+            --red: #f43f5e; --redSoft: #f43f5e18;
+            --text: #f8fafc; --muted: #94a3b8; --subtle: #334155;
+            --pdf-bg: #525659;
+        }
+        body.light-mode {
+            /* ☀️ Light Theme */
+            --bg: #f8fafc; --surface: #ffffff; --card: #ffffff; --border: #e2e8f0;
+            --text: #0f172a; --muted: #64748b; --subtle: #f1f5f9;
+            --pdf-bg: #e2e8f0;
+            --accentSoft: #e0f2fe; --greenSoft: #dcfce7; --yellowSoft: #fef3c7; 
+            --tealSoft: #ccfbf1; --orangeSoft: #ffedd5; --purpleSoft: #ede9fe; --redSoft: #ffe4e6;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:var(--bg); color:var(--text); font-family:'DM Sans', 'Sarabun', sans-serif; overflow-x: hidden; transition: background 0.3s, color 0.3s; }
+        ::-webkit-scrollbar { width:6px; height:6px; }
+        ::-webkit-scrollbar-track { background:var(--surface); }
+        ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+        /* App Layout */
+        .app-container { display:flex; height:100vh; overflow:hidden; position: relative; }
+        .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:90; backdrop-filter:blur(2px); opacity:0; transition:opacity 0.3s; }
+        .sidebar-overlay.active { display:block; opacity:1; }
+
+        .sidebar { width:240px; min-width:240px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; z-index:100; transition: transform 0.3s ease, background 0.3s; }
+        .sidebar-logo { padding:24px 20px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+        .logo-mark { font-family:'Syne', sans-serif; font-weight:800; font-size:22px; background:linear-gradient(135deg, #0ea5e9, #6366f1); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .logo-sub { font-size:10px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-top:2px; }
+        .mobile-close-menu { display:none; background:none; border:none; color:var(--text); font-size:24px; cursor:pointer; }
+        
+        .nav-list { padding:12px 0; flex:1; overflow-y:auto; }
+        .nav-item { display:flex; align-items:center; gap:12px; padding:12px 20px; cursor:pointer; font-size:14px; color:var(--muted); transition:all .15s; border-left:3px solid transparent; }
+        .nav-item:hover { color:var(--text); background:var(--card); }
+        .nav-item.active { color:var(--accentHover); background:var(--accentSoft); border-left-color:var(--accent); font-weight:500; }
+        .nav-icon { font-size:16px; opacity:.7; width:20px; text-align:center; }
+        .notif-dot { width:6px; height:6px; border-radius:50%; background:var(--red); display:inline-block; margin-left:auto; }
+        
+        .sidebar-footer { padding:16px 20px; border-top:1px solid var(--border); display:flex; align-items:center; gap:12px; }
+        .avatar { width:36px; height:36px; border-radius:10px; background:var(--card); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; }
+        .avatar img { width:100%; height:100%; object-fit:contain; display:none; }
+        .avatar span { font-size:14px; font-weight:700; color:var(--accent); font-family:'Syne', sans-serif; }
+        .user-info { flex:1; overflow:hidden; display:flex; align-items:center; justify-content:space-between; }
+        .theme-btn { background:none; border:none; color:var(--muted); font-size:18px; cursor:pointer; padding:4px; border-radius:6px; transition:all 0.2s; }
+        .theme-btn:hover { background:var(--subtle); color:var(--text); }
+
+        .main-view { flex:1; display:flex; flex-direction:column; overflow:hidden; width:100%; }
+        .topbar { height:64px; min-height:64px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 24px; gap:16px; transition:background 0.3s; }
+        .menu-toggle { display:none; background:none; border:none; color:var(--text); font-size:24px; cursor:pointer; margin-right:12px; }
+        .page-title { font-family:'Syne', sans-serif; font-size:18px; font-weight:700; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; }
+        .content { flex:1; overflow-y:auto; padding:24px; -webkit-overflow-scrolling: touch; }
+
+        /* General UI */
+        .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 16px; border-radius:8px; border:none; font-size:13px; font-weight:500; cursor:pointer; transition:all .15s; font-family:inherit; white-space:nowrap; }
+        .btn-sm { padding:6px 12px; font-size:12px; border-radius:6px; }
+        .btn-primary { background:var(--accent); color:#fff; }
+        .btn-primary:hover { background:var(--accentHover); }
+        .btn-success { background:var(--green); color:#fff; }
+        .btn-teal { background:var(--teal); color:#fff; }
+        .btn-teal:hover { opacity: 0.9; }
+        .btn-danger { background:var(--red); color:#fff; }
+        .btn-purple { background:var(--purple); color:#fff; }
+        .btn-ghost { background:transparent; color:var(--text); border:1px solid var(--border); }
+        .btn-ghost:hover { background:var(--surface); border-color:var(--muted); }
+        
+        .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:20px; transition:all .2s; }
+        .grid-4 { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px; }
+        .grid-2 { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:16px; margin-bottom:24px; }
+        .grid-3 { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:16px; margin-bottom:24px; }
+        .section-title { font-family:'Syne', sans-serif; font-size:15px; font-weight:600; color:var(--text); margin-bottom:16px; display:block; }
+        
+        .form-group { margin-bottom:16px; display:flex; flex-direction:column; gap:8px; }
+        .form-group label { font-size:12px; color:var(--muted); font-weight:500; }
+        .form-control { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:var(--text); font-family:inherit; font-size:14px; outline:none; transition:border-color .15s; }
+        .form-control:focus { border-color:var(--accent); }
+        .form-control:disabled { opacity:0.6; cursor:not-allowed; }
+        
+        .table-wrap { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow-x:auto; margin-bottom:24px; -webkit-overflow-scrolling:touch; }
+        .table-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border); min-width:600px; }
+        table { width:100%; border-collapse:collapse; min-width:600px; }
+        th { text-align:left; padding:14px 20px; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); border-bottom:1px solid var(--border); font-weight:600; white-space:nowrap; }
+        td { padding:14px 20px; font-size:14px; border-bottom:1px solid var(--border); }
+        tr:last-child td { border-bottom:none; }
+        tr:hover td { background:var(--surface); }
+
+        .badge { display:inline-flex; align-items:center; justify-content:center; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:600; letter-spacing:.4px; }
+        .bg-green { background:var(--greenSoft); color:var(--green); }
+        .bg-yellow { background:var(--yellowSoft); color:var(--yellow); }
+        .bg-teal { background:var(--tealSoft); color:var(--teal); }
+        .bg-purple { background:var(--purpleSoft); color:var(--purple); }
+        .bg-red { background:var(--redSoft); color:var(--red); }
+        .bg-gray { background:var(--subtle); color:var(--muted); }
+
+        .kpi-label { font-size:12px; color:var(--muted); margin-bottom:8px; font-weight:500; }
+        .kpi-value { font-family:'Syne', sans-serif; font-size:24px; font-weight:700; color:var(--text); line-height:1; }
+        .kpi-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; margin-bottom:16px; }
+        
+        .empty { text-align:center; padding:60px 20px; color:var(--muted); }
+        .empty-icon { font-size:40px; margin-bottom:16px; opacity:.3; }
+
+        /* Forms Layout */
+        .line-item-row { display:flex; gap:10px; margin-bottom:10px; align-items:center; background:var(--surface); padding:10px; border-radius:8px; border:1px solid var(--border); flex-wrap:wrap; }
+        .line-item-row .sel { flex:1; min-width:200px; }
+        .line-item-row .txt { flex:2; min-width:200px; }
+        .line-item-row .num { width:80px; text-align:center; }
+        .line-item-row .price { width:100px; text-align:right; }
+        .line-item-row .discount { width:80px; text-align:right; }
+        .line-item-row .total { width:100px; text-align:right; font-weight:600; font-size:13px; }
+        
+        /* Modals & Toasts */
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); display:none; align-items:center; justify-content:center; z-index:1000; backdrop-filter:blur(3px); }
+        .modal-overlay.active { display:flex; animation:fadeIn 0.2s ease; }
+        .modal-box { background:var(--card); border:1px solid var(--border); border-radius:16px; width:90%; max-width:500px; padding:24px; box-shadow:0 10px 40px rgba(0,0,0,0.5); max-height:90vh; display:flex; flex-direction:column; }
+        .modal-box.modal-lg { max-width:900px; background: var(--pdf-bg); padding: 0; } 
+        .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; font-size:18px; font-weight:600; font-family:'Syne', sans-serif; flex-shrink:0; color:var(--text); }
+        .modal-lg .modal-header { padding: 16px 24px; margin-bottom: 0; background: var(--card); border-bottom: 1px solid var(--border); border-radius: 16px 16px 0 0; }
+        .modal-close { cursor:pointer; color:var(--muted); font-size:24px; background:none; border:none; padding:4px; }
+        .modal-body { overflow-y:auto; flex:1; -webkit-overflow-scrolling:touch; }
+        .modal-lg .modal-body { padding: 30px 20px; display: flex; flex-direction:column; align-items: center; gap:30px; }
+
+        .toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
+        .toast { background:var(--card); border:1px solid var(--border); border-left:4px solid var(--green); padding:16px 24px; border-radius:10px; box-shadow:0 10px 25px rgba(0,0,0,0.4); display:flex; align-items:center; gap:12px; animation:slideIn 0.3s ease; color:var(--text); font-size:14px; font-weight:500; }
+        
+        @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+        @keyframes slideIn { from{transform:translateX(100%); opacity:0;} to{transform:translateX(0); opacity:1;} }
+        .fade-up { animation:fadeUp .3s ease both; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+        /* 📄 TRUE A4 DOCUMENT STYLE (Perfect Fit) */
+        .a4-wrapper { display: flex; flex-direction: column; gap: 30px; width: 100%; align-items: center; transform-origin: top center; }
+        .a4-page { 
+            width: 210mm; 
+            height: 297mm; /* บังคับความสูงคงที่ A4 พอดี */
+            background: #ffffff; 
+            color: #111111; 
+            padding: 15mm 20mm; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+            font-family: 'Sarabun', sans-serif; 
+            position: relative; 
+            flex-shrink: 0; 
+            overflow: hidden; 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column; /* เพื่อให้ใช้ flex-grow ดันลายเซ็นลงล่าง */
+        }
+        
+        .tri-teal { position: absolute; top: 0; right: 0; border-style: solid; border-width: 0 150px 150px 0; border-color: transparent var(--teal) transparent transparent; z-index: 1; }
+        .tri-blue { position: absolute; top: 0; right: 0; border-style: solid; border-width: 0 150px 150px 0; border-color: transparent #0ea5e9 transparent transparent; z-index: 1; }
+        .tri-green { position: absolute; top: 0; right: 0; border-style: solid; border-width: 0 150px 150px 0; border-color: transparent #10b981 transparent transparent; z-index: 1; }
+        .tri-purple { position: absolute; top: 0; right: 0; border-style: solid; border-width: 0 150px 150px 0; border-color: transparent #8b5cf6 transparent transparent; z-index: 1; }
+        .a4-page * { position: relative; z-index: 2; }
+        
+        .a4-header-grid { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 25px; }
+        .a4-header-left { flex: 1; padding-right: 15px; }
+        .a4-header-right { min-width: 200px; text-align: right; }
+
+        .a4-company-name { font-size: 15px; font-weight: 700; color: #0f172a; margin-bottom: 5px; margin-top: 15px; text-transform: uppercase; }
+        .a4-company-details { font-size: 12px; color: #334155; line-height: 1.5; }
+        .a4-doc-title { font-size: 24px; font-weight: 700; text-align: right; margin-bottom: 15px; }
+        
+        .a4-meta-table { width: 100%; font-size: 12px; }
+        .a4-meta-table td { padding: 4px 0; border: none; }
+        .a4-meta-table td:nth-child(1) { color: #475569; text-align: left; padding-right: 15px; white-space: nowrap; }
+        .a4-meta-table td:nth-child(2) { color: #0f172a !important; font-weight: 600; text-align: right; white-space: nowrap; }
+        
+        .a4-customer-box { margin-bottom: 20px; font-size: 12px; color: #334155; }
+        .a4-customer-title { font-weight: 700; margin-bottom: 4px; font-size: 13px; }
+        .a4-customer-name { font-weight: 700; color: #0f172a; font-size: 14px; margin-bottom: 4px; }
+
+        .a4-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 12px; }
+        .a4-table th { border-top: 2px solid #cbd5e1; border-bottom: 2px solid #cbd5e1; padding: 10px 5px; text-align: right; color: #334155; font-weight: 600; }
+        .a4-table th:nth-child(1), .a4-table th:nth-child(2) { text-align: left; }
+        .a4-table td { border-bottom: 1px solid #f1f5f9; padding: 10px 5px; text-align: right; color: #0f172a; vertical-align: top; }
+        .a4-table td:nth-child(1), .a4-table td:nth-child(2) { text-align: left; }
+        
+        .a4-totals-grid { display: grid; grid-template-columns: 1fr 280px; gap: 20px; }
+        .a4-baht-text { font-size: 13px; color: #475569; align-self: flex-start; margin-top: 5px; }
+        .a4-total-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; color: #475569; }
+        .a4-total-row.grand { font-weight: 700; font-size: 14px; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 8px; }
+        .a4-total-row.net { color: #0f172a; font-weight: 700; font-size: 14px; }
+
+        .a4-signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; text-align: center; margin-top: auto; }
+        .a4-sig-box { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 120px; font-size: 12px; color: #475569; }
+        .a4-sig-line { width: 200px; border-top: 1px solid #94a3b8; margin: 10px 0 8px 0; }
+        .a4-sig-img { max-height: 50px; max-width: 150px; object-fit: contain; margin-bottom: -10px; mix-blend-mode: multiply; }
+        
+        .a4-footer-brand { text-align: right; font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 10px; margin-top: 20px; }
+        .a4-footer-brand span { font-weight: bold; font-family: 'Syne'; }
+
+        /* Payment Block */
+        .a4-bank-box { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 20px; }
+        .a4-bank-logo { width: 50px; height: 50px; border-radius: 50%; background: #f59e0b; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; font-weight: bold; flex-shrink: 0; }
+        .a4-bank-info { font-size: 14px; color: #475569; flex: 1; margin-left: 20px; }
+        .a4-bank-acc { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+        .a4-qr { width: 110px; height: 110px; flex-shrink: 0; object-fit: contain; border:1px solid #e2e8f0; border-radius:8px; padding:4px;}
+
+        /* PRINT CONFIGURATION */
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: #fff !important; margin: 0; padding: 0; }
+            .app-container, .modal-overlay, .toast-container, .public-toolbar { display: none !important; }
+            #print-area { display: block !important; position: static; width: 100%; background: none; }
+            .a4-wrapper { gap: 0; }
+            .a4-page { box-shadow: none !important; margin: 0 !important; border-radius: 0 !important; width: 210mm !important; height: 297mm !important; page-break-after: always; page-break-inside: avoid; transform: none !important; }
+            .a4-page:last-child { page-break-after: auto; }
+        }
+
+        /* 📱 Mobile Adjustments */
+        @media (max-width: 768px) {
+            .sidebar { position:fixed; left:-260px; height:100%; width:260px; box-shadow:5px 0 25px rgba(0,0,0,0.5); }
+            .sidebar.open { left:0; transform:translateX(0); }
+            .menu-toggle { display:block; } .mobile-close-menu { display:block; }
+            .topbar { padding:0 16px; height:60px; min-height:60px; } .content { padding:16px; } .card { padding:16px; }
+            .topbar-actions .btn { font-size:12px; padding:6px 10px; }
+            
+            .line-item-row { flex-direction:column; align-items:stretch; position:relative; }
+            .line-item-row .num, .line-item-row .price, .line-item-row .discount { text-align:left; }
+            .line-item-row .total { text-align:right; margin-top:8px; color:var(--accent); font-size:16px; width:100%; }
+            .line-item-row .del { position:absolute; top:8px; right:8px; width:auto; padding:6px 12px; }
+            
+            .toast-container { left:16px; right:16px; bottom:16px; } .toast { width:100%; box-sizing:border-box; }
+            .modal-box { width:95%; max-height:95vh; border-radius:12px; padding: 16px;} .modal-lg .modal-body { padding: 10px; }
+            
+            /* Responsive A4 Scale */
+            .a4-wrapper { transform: scale(0.42); margin-bottom: -160%; }
+            .public-toolbar { flex-direction:column; gap:10px; text-align:center; padding: 15px !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="app-root">
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div>
+                <div class="logo-mark">BizFlow</div>
+                <div class="logo-sub">Enterprise Accounting</div>
+            </div>
+            <button class="mobile-close-menu" onclick="toggleMobileMenu()">×</button>
+        </div>
+        <div class="nav-list" id="nav"></div>
+        <div class="sidebar-footer">
+            <div class="avatar" id="sidebar-avatar"><span id="sidebar-avatar-text">T</span><img id="sidebar-avatar-img" src="" alt="logo"></div>
+            <div class="user-info">
+                <div><div class="user-name" id="display-user-name">Company</div><div class="user-role">Administrator</div></div>
+                <button class="theme-btn" onclick="toggleTheme()" id="theme-icon">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <div class="main-view">
+        <div class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" onclick="toggleMobileMenu()">☰</button>
+                <div class="page-title" id="page-title">Dashboard</div>
+            </div>
+            <div class="topbar-actions" style="display:flex; gap:8px; align-items:center;">
+                <button class="btn btn-teal btn-sm" onclick="setPage('doc-create', 'QT')">+ เสนอราคา</button>
+                <button class="btn btn-primary btn-sm" onclick="setPage('doc-create', 'INV')">+ แจ้งหนี้</button>
+            </div>
+        </div>
+        <div class="content" id="content"></div>
+    </div>
+</div>
+
+<!-- GLOBAL MODAL -->
+<div class="modal-overlay" id="modal"><div class="modal-box" id="modal-box"></div></div>
+
+<!-- PRINT AREA -->
+<div id="print-area" style="display:none;"></div>
+
+<!-- TOASTS -->
+<div class="toast-container" id="toasts"></div>
+
+<script>
+/* ==========================================
+   0. ENCODE/DECODE HELPERS (FOR PUBLIC LINK)
+   ========================================== */
+function utoa(str) { return window.btoa(unescape(encodeURIComponent(str))); }
+function atou(str) { return decodeURIComponent(escape(window.atob(str))); }
+
+/* ==========================================
+   1. DATABASE, DATA MODEL & THEME
+   ========================================== */
+const NAV_ITEMS = [
+    { id: "dashboard", icon: "◈", label: "หน้าแรก (Dashboard)" },
+    { id: "customers", icon: "◉", label: "ลูกค้า (Customers)" },
+    { id: "products", icon: "⬡", label: "สินค้า (Products)" },
+    { id: "docs-QT", icon: "◧", label: "ใบเสนอราคา (Quotations)" },
+    { id: "docs-INV", icon: "◨", label: "ใบแจ้งหนี้ (Invoices)", notif: true },
+    { id: "docs-BL", icon: "📄", label: "ใบวางบิล (Billing Note)" },
+    { id: "payments", icon: "◎", label: "รับชำระเงิน (Payments)" },
+    { id: "docs-RE", icon: "◩", label: "ใบเสร็จรับเงิน (Receipts)" },
+    { id: "reports", icon: "▦", label: "รายงาน (Reports)" },
+    { id: "line", icon: "◬", label: "LINE OA Automation" },
+    { id: "settings", icon: "⚙", label: "ตั้งค่าระบบ (Settings)" }
+];
+
+const PAGE_TITLES = { 
+    dashboard:"ภาพรวมธุรกิจ (Overview)", customers:"ฐานข้อมูลลูกค้า", products:"สินค้า & บริการ", 
+    "docs-QT":"ใบเสนอราคา", "docs-INV":"ใบแจ้งหนี้ / ใบส่งสินค้า", "docs-BL":"ใบวางบิล (Billing Note)", "docs-RE":"ใบเสร็จรับเงิน", 
+    payments:"บันทึกรับชำระเงิน (Payments)", reports:"รายงานผลประกอบการ", line:"การแจ้งเตือน LINE OA", settings:"ตั้งค่าบริษัท & บัญชีธนาคาร" 
+};
+
+// Document Types Mapping (QT is Teal/Cyan)
+const DOC_META = {
+    'QT': { title: "ใบเสนอราคา", prefix: "QT", color: "teal", hex: "#0d9488" },
+    'INV': { title: "ใบแจ้งหนี้ / ใบส่งสินค้า", prefix: "INV", color: "blue", hex: "#0ea5e9" },
+    'BL': { title: "ใบวางบิล", prefix: "BL", color: "purple", hex: "#8b5cf6" },
+    'RE': { title: "ใบเสร็จรับเงิน", prefix: "RE", color: "green", hex: "#10b981" }
+};
+
+const defaultData = {
+    settings: { companyName: "AI BUSINESS & LINE OA AUTOMATION", taxId: "0105555555555", address: "Asoke-Ratchada ชั้น 25\nกรุงเทพมหานคร 10400", logo: "", signature: "", qrCode: "", bankName: "ธ. กรุงศรีอยุธยา", bankAcc: "584-1-30161-3", bankBranch: "สาขา อโศก", bankOwner: "บจก. เอไอ บิสสิเนส", issuerName: "รุจิรา กิจรักษา" },
+    customers: [{ id: "C001", name: "บริษัท เทค อินโนเวชั่น จำกัด", email: "contact@tech.co.th", taxId: "1730201350671", phone: "063-651-5246" }],
+    products: [{ id: "P001", name: "ค่าบริการออกแบบและพัฒนาระบบ", price: 25000 }, { id: "P002", name: "ค่าบริการดูแลรักษาระบบ (รายเดือน)", price: 5000 }],
+    documents: [
+        { id: "QT202405001", type: "QT", customerId: "C001", date: "01/05/2024", due: "15/05/2024", items: [{productId:"P001", name:"ค่าบริการออกแบบและพัฒนาระบบ", qty:1, price:25000, discount:0}], subtotal: 25000, vatRate: 0, vat: 0, whtRate: 0, wht: 0, total: 25000, status: "sent" },
+        { id: "INV202405001", type: "INV", customerId: "C001", date: "11/05/2024", due: "18/05/2024", items: [{productId:"P001", name:"ค่าบริการออกแบบและพัฒนาระบบ", qty:1, price:25000, discount:0}], subtotal: 25000, vatRate: 7, vat: 1750, whtRate: 3, wht: 750, total: 26750, status: "unpaid" }
+    ]
+};
+
+let DB = JSON.parse(localStorage.getItem('bizflow_db_v11'));
+if (!DB || !DB.settings) { DB = {...defaultData, ...DB}; if(!DB.settings.qrCode) DB.settings.qrCode = ""; if(!DB.settings.issuerName) DB.settings.issuerName = "รุจิรา กิจรักษา"; saveDB(); }
+if (!DB.settings.issuerName) DB.settings.issuerName = "รุจิรา กิจรักษา"; // Check for old users
+
+let isLightMode = localStorage.getItem('bizflow_theme') === 'light';
+function applyTheme() { document.body.classList.toggle('light-mode', isLightMode); const ti = document.getElementById('theme-icon'); if(ti) ti.innerText = isLightMode ? '☀️' : '🌙'; }
+function toggleTheme() { isLightMode = !isLightMode; localStorage.setItem('bizflow_theme', isLightMode ? 'light' : 'dark'); applyTheme(); }
+
+/* ==========================================
+   2. UTILITIES & BAHT TEXT
+   ========================================== */
+function saveDB() { localStorage.setItem('bizflow_db_v11', JSON.stringify(DB)); }
+function formatMoney(num) { return Number(num).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function generateId(prefix) { const d = new Date(); return prefix + d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(Math.floor(Math.random()*1000)).padStart(3,'0'); }
+function showToast(msg, isLink = false) { const box = document.getElementById('toasts'); const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `${isLink ? '🔗' : '✅'} <span>${msg}</span>`; box.appendChild(t); setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 3000); }
+function toggleMobileMenu() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebar-overlay').classList.toggle('active'); }
+
+function getStatusBadge(s, type) {
+    const map = { draft: ["bg-gray","ฉบับร่าง"], sent: ["bg-teal","ส่งแล้ว"], unpaid: ["bg-yellow","รอชำระเงิน"], paid: ["bg-green", type==='RE'?"รับเงินแล้ว":"ชำระแล้ว"], overdue: ["bg-red","เกินกำหนดชำระ"] };
+    const [cls, label] = map[s] || ["bg-gray", s]; return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function ThaiBahtText(amount) {
+    if (amount === 0) return '(ศูนย์บาทถ้วน)';
+    let str = parseFloat(Math.abs(amount)).toFixed(2).toString();
+    const t = ['','สิบ','ร้อย','พัน','หมื่น','แสน','ล้าน'];
+    const n = ['','หนึ่ง','สอง','สาม','สี่','ห้า','หก','เจ็ด','แปด','เก้า'];
+    let parts = str.split('.'); let baht = parts[0], satang = parts[1];
+    function convert(numStr) {
+        let res = '';
+        for (let i = 0; i < numStr.length; i++) {
+            let digit = parseInt(numStr.charAt(i)); let pos = numStr.length - i - 1;
+            if (digit !== 0) {
+                if (pos === 1 && digit === 1) res += 'สิบ'; else if (pos === 1 && digit === 2) res += 'ยี่สิบ';
+                else if (pos === 0 && digit === 1 && numStr.length > 1 && numStr.charAt(numStr.length-2) !== '0') res += 'เอ็ด';
+                else res += n[digit] + t[pos];
+            }
+        } return res;
+    }
+    let resText = convert(baht) + 'บาท';
+    if (satang === '00') resText += 'ถ้วน'; else resText += convert(satang) + 'สตางค์';
+    return `(${amount < 0 ? 'ลบ' : ''}${resText})`;
+}
+
+function getCurrentFormattedDate() {
+    const d = new Date(); return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+}
+
+/* ==========================================
+   3. ROUTING & SIDEBAR
+   ========================================== */
+let currentPage = 'dashboard';
+let currentDocCreateType = 'INV'; 
+
+function setPage(pageId, extraParam = null) {
+    currentPage = pageId.startsWith('docs-') ? pageId : pageId;
+    if(pageId === 'doc-create') currentDocCreateType = extraParam || 'INV';
+    
+    renderSidebar();
+    document.getElementById('page-title').innerText = PAGE_TITLES[currentPage] || (pageId === 'doc-create' ? `สร้าง ${DOC_META[currentDocCreateType].title}` : 'BizFlow');
+    const content = document.getElementById('content');
+    if(window.innerWidth <= 768 && document.getElementById('sidebar').classList.contains('open')) toggleMobileMenu();
+    
+    if(pageId === 'dashboard') content.innerHTML = renderDashboard();
+    else if(pageId === 'customers') content.innerHTML = renderCustomers();
+    else if(pageId === 'products') content.innerHTML = renderProducts();
+    else if(pageId.startsWith('docs-')) content.innerHTML = renderDocList(pageId.split('-')[1]);
+    else if(pageId === 'doc-create') { initDocCreate(currentDocCreateType); renderDocCreateUI(); }
+    else if(pageId === 'payments') content.innerHTML = renderPayments();
+    else if(pageId === 'reports') content.innerHTML = renderReports();
+    else if(pageId === 'line') content.innerHTML = renderLineOA();
+    else if(pageId === 'settings') content.innerHTML = renderSettings();
+}
+
+function renderSidebar() {
+    document.getElementById('nav').innerHTML = NAV_ITEMS.map(n => `<div class="nav-item ${currentPage === n.id ? 'active' : ''}" onclick="setPage('${n.id}')"><span class="nav-icon">${n.icon}</span><span>${n.label}</span>${n.notif ? '<span class="notif-dot"></span>' : ''}</div>`).join('');
+    document.getElementById('display-user-name').innerText = DB.settings.companyName;
+    const avaText = document.getElementById('sidebar-avatar-text'), avaImg = document.getElementById('sidebar-avatar-img');
+    if (DB.settings.logo) { avaImg.src = DB.settings.logo; avaImg.style.display = 'block'; avaText.style.display = 'none'; } 
+    else { avaImg.style.display = 'none'; avaText.style.display = 'block'; avaText.innerText = DB.settings.companyName ? DB.settings.companyName.charAt(0).toUpperCase() : 'B'; }
+}
+
+/* ==========================================
+   4. DASHBOARD & MASTER DATA
+   ========================================== */
+function renderDashboard() {
+    const invs = DB.documents.filter(d => d.type === 'INV');
+    let totalRev = invs.filter(i=>i.status==='paid').reduce((s,i)=>s+i.total, 0);
+    let totalPending = invs.filter(i=>i.status==='unpaid' || i.status==='overdue').reduce((s,i)=>s+i.total, 0);
+    
+    const recent = [...DB.documents].reverse().slice(0,6).map(doc => {
+        const cus = DB.customers.find(c=>c.id===doc.customerId) || {name:'Unknown'};
+        const color = DOC_META[doc.type].hex;
+        return `<tr onclick="openPreview('${doc.id}')" style="cursor:pointer">
+            <td><span class="badge" style="background:${color}20; color:${color}; margin-right:8px;">${doc.type}</span> <span style="font-weight:600">${doc.id}</span></td>
+            <td><div style="font-size:13px; font-weight:500; color:var(--text)">${cus.name}</div><div style="font-size:11px; color:var(--muted)">${doc.date}</div></td>
+            <td style="font-weight:600">฿${formatMoney(doc.total)}</td>
+            <td>${getStatusBadge(doc.status, doc.type)}</td>
+        </tr>`;
+    }).join('') || `<tr><td colspan="4" class="empty">ไม่มีเอกสารล่าสุด</td></tr>`;
+
+    return `<div class="grid-4 fade-up">
+        <div class="card" style="margin-bottom:0"><div class="kpi-icon" style="background:var(--greenSoft); color:var(--green)">฿</div><div class="kpi-label">รายได้ (รับเงินแล้ว)</div><div class="kpi-value">฿${formatMoney(totalRev)}</div></div>
+        <div class="card" style="margin-bottom:0"><div class="kpi-icon" style="background:var(--yellowSoft); color:var(--yellow)">◨</div><div class="kpi-label">ค้างรับชำระ (Pending)</div><div class="kpi-value">฿${formatMoney(totalPending)}</div></div>
+        <div class="card" style="margin-bottom:0"><div class="kpi-icon" style="background:var(--accentSoft); color:var(--accent)">◉</div><div class="kpi-label">ลูกค้าทั้งหมด</div><div class="kpi-value">${DB.customers.length} <span style="font-size:14px; font-weight:normal; color:var(--muted)">ราย</span></div></div>
+        <div class="card" style="margin-bottom:0"><div class="kpi-icon" style="background:var(--tealSoft); color:var(--teal)">◧</div><div class="kpi-label">เอกสารทั้งหมด</div><div class="kpi-value">${DB.documents.length} <span style="font-size:14px; font-weight:normal; color:var(--muted)">ฉบับ</span></div></div>
+    </div>
+    <div class="grid-2 fade-up" style="animation-delay:0.1s">
+        <div class="table-wrap" style="margin-bottom:0"><div class="table-header"><span class="section-title" style="margin:0">เอกสารเคลื่อนไหวล่าสุด</span></div>
+        <table><thead><tr><th>เอกสาร</th><th>ลูกค้า / วันที่</th><th>ยอดสุทธิ</th><th>สถานะ</th></tr></thead><tbody>${recent}</tbody></table></div>
+        
+        <div class="card" style="margin-bottom:0">
+            <span class="section-title">เครื่องมือด่วน</span>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <button class="btn btn-teal" style="width:100%; padding:12px;" onclick="setPage('doc-create', 'QT')">+ สร้างใบเสนอราคา</button>
+                <button class="btn btn-primary" style="width:100%; padding:12px;" onclick="setPage('doc-create', 'INV')">+ สร้างใบแจ้งหนี้</button>
+                <button class="btn btn-purple" style="width:100%; padding:12px;" onclick="setPage('doc-create', 'BL')">+ สร้างใบวางบิล</button>
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderCustomers() {
+    return `<div class="card fade-up"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;"><span class="section-title" style="margin:0">ข้อมูลลูกค้าทั้งหมด</span><button class="btn btn-primary" onclick="openCustomerModal()">+ เพิ่มลูกค้าใหม่</button></div>
+    <div class="table-wrap"><table><thead><tr><th>ชื่อลูกค้า/บริษัท</th><th>ติดต่อ</th><th>เลขผู้เสียภาษี</th><th>จัดการ</th></tr></thead><tbody>${DB.customers.map(c => `<tr><td style="font-weight:600; color:var(--text)">${c.name}</td><td><div style="font-size:13px">${c.phone||'-'}</div><div style="font-size:11px; color:var(--muted)">${c.email||'-'}</div></td><td style="color:var(--muted)">${c.taxId||'-'}</td><td><button class="btn btn-ghost btn-sm" onclick="deleteCustomer('${c.id}')">ลบ</button></td></tr>`).join('') || `<tr><td colspan="4" class="empty">ยังไม่มีข้อมูลลูกค้า</td></tr>`}</tbody></table></div></div>`;
+}
+
+function renderProducts() {
+    return `<div class="card fade-up"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;"><span class="section-title" style="margin:0">แคตตาล็อกสินค้า / บริการ</span><button class="btn btn-primary" onclick="openProductModal()">+ เพิ่มสินค้าใหม่</button></div>
+    <div class="table-wrap"><table><thead><tr><th>รหัส</th><th>ชื่อสินค้า/บริการ</th><th>ราคาเริ่มต้น</th><th>จัดการ</th></tr></thead><tbody>${DB.products.map(p => `<tr><td style="color:var(--muted)">${p.id}</td><td style="font-weight:500">${p.name}</td><td style="font-weight:600; color:var(--accent)">฿${formatMoney(p.price)}</td><td><button class="btn btn-ghost btn-sm" onclick="deleteProduct('${p.id}')">ลบ</button></td></tr>`).join('') || `<tr><td colspan="4" class="empty">ยังไม่มีข้อมูลสินค้า</td></tr>`}</tbody></table></div></div>`;
+}
+
+/* ==========================================
+   5. DOCUMENT LIST & PAYMENTS
+   ========================================== */
+function renderDocList(type) {
+    const meta = DOC_META[type];
+    const docs = DB.documents.filter(d => d.type === type);
+    const rows = [...docs].reverse().map(doc => {
+        const cus = DB.customers.find(c=>c.id===doc.customerId) || {name:'Unknown'};
+        return `<tr><td style="color:${meta.hex}; font-weight:600; cursor:pointer;" onclick="openPreview('${doc.id}')">${doc.id}</td><td><div style="font-weight:500; color:var(--text)">${cus.name}</div></td><td style="color:var(--muted); font-size:12px;">${doc.date}</td><td style="font-weight:600;">฿${formatMoney(doc.total)}</td><td>${getStatusBadge(doc.status, type)}</td><td><div style="display:flex; gap:8px;"><button class="btn btn-ghost btn-sm" onclick="openPreview('${doc.id}')">ดู / PDF</button><button class="btn btn-ghost btn-sm" style="color:var(--red); border-color:transparent;" onclick="deleteDoc('${doc.id}')">ลบ</button></div></td></tr>`;
+    }).join('') || `<tr><td colspan="6" class="empty">ยังไม่มีเอกสาร ${meta.title}</td></tr>`;
+
+    return `<div class="card fade-up"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;"><span class="section-title" style="margin:0">${meta.title} ทั้งหมด</span><button class="btn btn-primary" style="background:${meta.hex}" onclick="setPage('doc-create', '${type}')">+ สร้าง${meta.title}</button></div>
+    <div class="table-wrap"><table><thead><tr><th>เลขที่เอกสาร</th><th>ลูกค้า</th><th>วันที่ออก</th><th>ยอดสุทธิ</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+function renderPayments() {
+    const unpaidInvs = DB.documents.filter(d => d.type === 'INV' && (d.status === 'unpaid' || d.status === 'overdue'));
+    const rows = unpaidInvs.map(inv => {
+        const cus = DB.customers.find(c=>c.id===inv.customerId) || {name:'Unknown'};
+        return `<tr><td style="color:var(--accent); font-weight:600;">${inv.id}</td><td>${cus.name}</td><td style="color:var(--red); font-size:12px;">${inv.due}</td><td style="font-weight:600;">฿${formatMoney(inv.total)}</td><td><button class="btn btn-success btn-sm" onclick="processPayment('${inv.id}')">💸 กดรับชำระเงิน (สร้างใบเสร็จ)</button></td></tr>`;
+    }).join('') || `<tr><td colspan="5" class="empty">ไม่มีใบแจ้งหนี้ที่ค้างชำระ เยี่ยมมาก! 🎉</td></tr>`;
+
+    return `<div class="card fade-up"><div style="margin-bottom:20px;"><span class="section-title" style="margin:0; color:var(--green)">บันทึกรับชำระเงิน</span><div style="font-size:13px; color:var(--muted); margin-top:4px;">เลือกใบแจ้งหนี้ที่ลูกค้าโอนเงินมาแล้ว ระบบจะเปลี่ยนสถานะและออก "ใบเสร็จรับเงิน" ให้อัตโนมัติ</div></div><div class="table-wrap"><table><thead><tr><th>อ้างอิง (INV)</th><th>ลูกค้า</th><th>ครบกำหนด</th><th>ยอดที่ต้องชำระ</th><th>ดำเนินการ</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+function processPayment(invId) {
+    const inv = DB.documents.find(d => d.id === invId); if(!inv) return;
+    if(!confirm(`ยืนยันรับชำระเงินยอด ฿${formatMoney(inv.total)} จาก ${DB.customers.find(c=>c.id===inv.customerId)?.name}?`)) return;
+    inv.status = 'paid';
+    const newRe = JSON.parse(JSON.stringify(inv)); newRe.id = generateId('RE'); newRe.type = 'RE'; newRe.status = 'paid'; newRe.date = getCurrentFormattedDate();
+    DB.documents.push(newRe); saveDB(); showToast(`รับชำระเงินเรียบร้อย ออกใบเสร็จ ${newRe.id} แล้ว`); setPage('docs-RE');
+}
+
+/* ==========================================
+   6. UNIVERSAL DOCUMENT CREATION 
+   ========================================== */
+let draftDoc = {};
+
+function initDocCreate(type) {
+    const today = getCurrentFormattedDate();
+    draftDoc = { type: type, customerId: "", date: today, due: today, items: [{ productId:"", name:"", qty:1, price:0, discount:0 }], vatRate: 0, whtRate: 0 };
+}
+
+function renderDocCreateUI() {
+    const meta = DOC_META[draftDoc.type];
+    const cusOptions = DB.customers.map(c=>`<option value="${c.id}" ${draftDoc.customerId===c.id?'selected':''}>${c.name}</option>`).join('');
+    
+    let html = `
+        <div class="card fade-up" style="border-top:4px solid ${meta.hex}">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items:center;">
+                <span style="font-size:18px; font-weight:700; color:${meta.hex}; font-family:'Syne'">สร้าง ${meta.title}</span><span class="badge bg-gray">ฉบับร่าง (Draft)</span>
+            </div>
+            <div class="grid-2">
+                <div class="form-group"><label>ลูกค้า *</label>
+                    <div style="display:flex; gap:8px;">
+                        <select id="form-cus" class="form-control" style="flex:1" onchange="draftDoc.customerId=this.value"><option value="">-- เลือกลูกค้า --</option>${cusOptions}</select>
+                        <button class="btn btn-ghost" onclick="openCustomerModal(true)">+ เพิ่มใหม่</button>
+                    </div>
+                </div>
+                <div class="form-group"><label>เลขที่เอกสาร</label><input class="form-control" value="[สร้างอัตโนมัติ ${meta.prefix}]" disabled></div>
+                <div class="form-group"><label>วันที่ออกเอกสาร (DD/MM/YYYY)</label><input type="text" class="form-control" value="${draftDoc.date}" onchange="draftDoc.date=this.value"></div>
+                <div class="form-group"><label>ครบกำหนดชำระ</label><input type="text" class="form-control" value="${draftDoc.due}" onchange="draftDoc.due=this.value"></div>
+            </div>
+            <div style="margin-top:24px; overflow-x:auto;"><span class="section-title">รายการสินค้า/บริการ</span><div style="min-width:600px;" id="form-items-container">${renderFormItems()}</div><button class="btn btn-ghost" style="margin-top:12px; width:100%; border-style:dashed;" onclick="addFormItem()">+ เพิ่มรายการใหม่</button></div>
+            <div class="grid-2" style="margin-top:30px; align-items:start;">
+                <div style="background:var(--surface); padding:16px; border-radius:8px; border:1px solid var(--border);">
+                    <span style="font-size:13px; font-weight:600; margin-bottom:10px; display:block;">ตั้งค่าภาษี</span>
+                    <div style="display:flex; gap:16px; margin-bottom:12px; flex-wrap:wrap;">
+                        <label style="font-size:13px; display:flex; align-items:center; gap:6px;"><input type="radio" name="vat" value="0" ${draftDoc.vatRate===0?'checked':''} onchange="draftDoc.vatRate=0; updateFormTotals()"> ไม่มี VAT</label>
+                        <label style="font-size:13px; display:flex; align-items:center; gap:6px;"><input type="radio" name="vat" value="7" ${draftDoc.vatRate===7?'checked':''} onchange="draftDoc.vatRate=7; updateFormTotals()"> รวม VAT 7%</label>
+                    </div>
+                    <span style="font-size:13px; font-weight:600; margin-bottom:10px; display:block;">หัก ณ ที่จ่าย (WHT)</span>
+                    <select class="form-control" onchange="draftDoc.whtRate=Number(this.value); updateFormTotals()">
+                        <option value="0" ${draftDoc.whtRate===0?'selected':''}>ไม่หัก ณ ที่จ่าย</option><option value="1" ${draftDoc.whtRate===1?'selected':''}>หัก 1% (ค่าขนส่ง)</option><option value="3" ${draftDoc.whtRate===3?'selected':''}>หัก 3% (ค่าบริการ)</option><option value="5" ${draftDoc.whtRate===5?'selected':''}>หัก 5% (ค่าเช่า)</option>
+                    </select>
+                </div>
+                <div style="display:flex; justify-content:flex-end;"><div style="width:100%; max-width:320px;" id="form-totals"></div></div>
+            </div>
+            <div style="margin-top:30px; display:flex; gap:12px; justify-content:flex-end; flex-wrap:wrap;">
+                <button class="btn btn-ghost" onclick="setPage('docs-${draftDoc.type}')">ยกเลิก</button>
+                <button class="btn btn-ghost" style="color:${meta.hex}; border-color:${meta.hex}" onclick="previewDraft()">🔍 ดูตัวอย่าง A4</button>
+                <button class="btn btn-primary" style="background:${meta.hex}" onclick="saveDraftDoc()">💾 บันทึกเอกสาร</button>
+            </div>
+        </div>
+    `;
+    document.getElementById('content').innerHTML = html;
+    updateFormTotals();
+}
+
+function renderFormItems() {
+    return draftDoc.items.map((item, idx) => `
+        <div class="line-item-row">
+            <select class="form-control sel" onchange="onSelectFormProduct(${idx}, this.value)"><option value="">-- สินค้าในระบบ --</option>${DB.products.map(p=>`<option value="${p.id}" ${item.productId===p.id?'selected':''}>${p.name}</option>`).join('')}</select>
+            <input type="text" class="form-control txt" placeholder="รายละเอียดรายการ" value="${item.name}" oninput="draftDoc.items[${idx}].name=this.value">
+            <div style="display:flex; gap:8px; width:100%;">
+                <input type="number" class="form-control num" placeholder="จำนวน" value="${item.qty}" oninput="draftDoc.items[${idx}].qty=+this.value; renderFormItemsUIHelper()">
+                <input type="number" class="form-control price" placeholder="ราคา/หน่วย" value="${item.price}" oninput="draftDoc.items[${idx}].price=+this.value; renderFormItemsUIHelper()">
+                <input type="number" class="form-control discount" placeholder="ส่วนลด" value="${item.discount}" oninput="draftDoc.items[${idx}].discount=+this.value; renderFormItemsUIHelper()">
+            </div>
+            <div class="total">฿${formatMoney((item.qty*item.price) - item.discount)}</div>
+            <button class="btn btn-danger del" onclick="removeFormItem(${idx})">✕</button>
+        </div>
+    `).join('');
+}
+function renderFormItemsUIHelper() { document.getElementById('form-items-container').innerHTML = renderFormItems(); updateFormTotals(); }
+function addFormItem() { draftDoc.items.push({ productId:"", name:"", qty:1, price:0, discount:0 }); renderFormItemsUIHelper(); }
+function removeFormItem(idx) { draftDoc.items.splice(idx, 1); renderFormItemsUIHelper(); }
+function onSelectFormProduct(idx, pId) { const p = DB.products.find(x=>x.id===pId); if(p) { draftDoc.items[idx].productId = p.id; draftDoc.items[idx].name = p.name; draftDoc.items[idx].price = p.price; renderFormItemsUIHelper(); } }
+
+function updateFormTotals() {
+    let rawTotal = draftDoc.items.reduce((s,i)=>s+((i.qty*i.price)-i.discount), 0);
+    let subtotal = rawTotal; let vat = 0;
+    if(draftDoc.vatRate === 7) vat = rawTotal * 0.07;
+    let wht = subtotal * (draftDoc.whtRate / 100);
+    let grandTotal = subtotal + vat - wht;
+    draftDoc.subtotal = subtotal; draftDoc.vat = vat; draftDoc.wht = wht; draftDoc.total = grandTotal;
+
+    const box = document.getElementById('form-totals');
+    if(box) box.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:8px; color:var(--muted)"><span>รวมเป็นเงิน</span><span>฿${formatMoney(subtotal)}</span></div><div style="display:flex; justify-content:space-between; margin-bottom:8px; color:var(--muted)"><span>ภาษีมูลค่าเพิ่ม (${draftDoc.vatRate}%)</span><span>฿${formatMoney(vat)}</span></div><div style="display:flex; justify-content:space-between; margin-bottom:12px; color:var(--red)"><span>หัก ณ ที่จ่าย (${draftDoc.whtRate}%)</span><span>- ฿${formatMoney(wht)}</span></div><div style="display:flex; justify-content:space-between; font-size:18px; font-weight:700; border-top:1px dashed var(--border); padding-top:16px; color:var(--text)"><span>ยอดชำระสุทธิ</span><span>฿${formatMoney(grandTotal)}</span></div>`;
+}
+
+function previewDraft() {
+    if(!draftDoc.customerId) return alert("กรุณาเลือกลูกค้าก่อน");
+    const validItems = draftDoc.items.filter(i=>i.price > 0 && i.name); if(validItems.length === 0) return alert("กรุณาเพิ่มรายการสินค้าอย่างน้อย 1 รายการ");
+    let tempDoc = JSON.parse(JSON.stringify(draftDoc)); tempDoc.id = "PREVIEW-001"; tempDoc.items = validItems; tempDoc.isDraft = true; openPreviewData(tempDoc);
+}
+
+function saveDraftDoc() {
+    if(!draftDoc.customerId) return alert('กรุณาเลือกลูกค้า');
+    const validItems = draftDoc.items.filter(i=>i.price > 0 && i.name); if(validItems.length === 0) return alert('กรุณาเพิ่มรายการอย่างน้อย 1 รายการ');
+    let newDoc = JSON.parse(JSON.stringify(draftDoc));
+    newDoc.id = generateId(newDoc.type); newDoc.items = validItems; newDoc.status = (newDoc.type === 'QT' || newDoc.type === 'BL') ? 'sent' : (newDoc.type === 'RE' ? 'paid' : 'unpaid');
+    DB.documents.push(newDoc); saveDB(); showToast(`บันทึกเอกสาร ${newDoc.id} สำเร็จ!`); setPage(`docs-${newDoc.type}`);
+}
+
+/* ==========================================
+   7. TRUE A4 DOCUMENT RENDERER
+   ========================================== */
+function generateInvoiceHTML(doc, customCus = null, customComp = null) {
+    const meta = DOC_META[doc.type];
+    const cus = customCus || DB.customers.find(c=>c.id === doc.customerId) || {name:'-', phone:'-', taxId:'-'};
+    const comp = customComp || DB.settings;
+    
+    const logoHtml = comp.logo ? `<img src="${comp.logo}" style="max-height:60px; max-width:180px; object-fit:contain; margin-bottom:15px;">` : ``;
+    const sigHtml = comp.signature ? `<img src="${comp.signature}" class="a4-sig-img">` : `<div style="height:40px;"></div>`;
+    const qrHtml = comp.qrCode ? `<img src="${comp.qrCode}" style="width:110px; height:110px; object-fit:contain;">` : `<div style="width:100px; height:100px; background:#fff; border:1px solid #ddd; padding:5px; border-radius:8px;"><svg viewBox="0 0 24 24" width="100%" height="100%"><path fill="#0f172a" d="M3 3h8v8H3zm2 2v4h4V5zm8-2h8v8h-8zm2 2v4h4V5zM3 13h8v8H3zm2 2v4h4v-4zm13 2h2v2h-2zm-3-4h2v2h-2zm2 2h2v2h-2zm-2 2h2v2h-2zm3 2h2v2h-2zm2-6h2v2h-2zm-2 2h2v2h-2z"/></svg></div>`;
+    const bankLogo = `<div style="width:40px; height:40px; border-radius:50%; background:#f59e0b; display:flex; align-items:center; justify-content:center; color:#fff; font-size:18px; font-family:'Syne'">B</div>`;
+    const issuerName = comp.issuerName || comp.companyName; 
+
+    let triangleClass = `tri-${meta.color}`;
+    let receiptStamp = doc.type === 'RE' || doc.status === 'paid' ? `<div style="position:absolute; top:200px; right:100px; border:4px solid #10b981; color:#10b981; font-size:32px; font-weight:bold; padding:10px 20px; transform:rotate(-15deg); opacity:0.8; border-radius:10px; z-index:10;">PAID / ชำระเงินแล้ว</div>` : '';
+
+    return `
+        <!-- PAGE 1: DOCUMENT -->
+        <div class="a4-page">
+            <div class="${triangleClass}"></div>
+            ${receiptStamp}
+            <div class="a4-header-grid">
+                <div class="a4-header-left">
+                    ${logoHtml}
+                    <div class="a4-company-name">${comp.companyName}</div>
+                    <div class="a4-company-details">${comp.address.replace(/\n/g, '<br>')}<br>เลขประจำตัวผู้เสียภาษี ${comp.taxId}</div>
+                </div>
+                <div class="a4-header-right">
+                    <div class="a4-doc-meta">
+                        <div class="a4-doc-title" style="color:${meta.hex}">${meta.title}</div>
+                        <table class="a4-meta-table">
+                            <tr><td>เลขที่</td><td>${doc.id}</td></tr>
+                            <tr><td>วันที่</td><td>${doc.date}</td></tr>
+                            <tr><td>ผู้ออกเอกสาร</td><td>${issuerName}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="a4-customer-box"><div class="a4-customer-title" style="color:${meta.hex}">ลูกค้า (Customer)</div><div class="a4-customer-name">${cus.name}</div><div>โทร: ${cus.phone} | เลขผู้เสียภาษี: ${cus.taxId}</div></div>
+
+            <table class="a4-table">
+                <thead><tr><th style="width:30px;">#</th><th>รายละเอียด</th><th style="width:60px; text-align:center;">จำนวน</th><th style="width:90px;">ราคา/หน่วย</th><th style="width:70px;">ส่วนลด</th><th style="width:110px;">มูลค่า (บาท)</th></tr></thead>
+                <tbody>${doc.items.map((it, i) => `<tr><td>${i+1}</td><td>${it.name.replace(/\n/g,'<br>')}</td><td style="text-align:center;">${it.qty}</td><td>${formatMoney(it.price)}</td><td>${formatMoney(it.discount)}</td><td style="font-weight:600;">${formatMoney((it.qty * it.price)-it.discount)}</td></tr>`).join('')}</tbody>
+            </table>
+
+            <div class="a4-totals-grid">
+                <div class="a4-baht-text">${ThaiBahtText(doc.total)}</div>
+                <div>
+                    <div class="a4-total-row"><span>รวมเป็นเงิน</span><span>${formatMoney(doc.subtotal)} บาท</span></div>
+                    <div class="a4-total-row"><span>ภาษีมูลค่าเพิ่ม (${doc.vatRate}%)</span><span>${formatMoney(doc.vat)} บาท</span></div>
+                    <div class="a4-total-row grand" style="color:${meta.hex}"><span>จำนวนเงินรวมทั้งสิ้น</span><span>${formatMoney(doc.subtotal + doc.vat)} บาท</span></div>
+                    <div class="a4-total-row" style="color:#f43f5e"><span>หักภาษี ณ ที่จ่าย (${doc.whtRate}%)</span><span>${formatMoney(doc.wht)} บาท</span></div>
+                    <div class="a4-total-row net"><span>ยอดชำระสุทธิ</span><span>${formatMoney(doc.total)} บาท</span></div>
+                </div>
+            </div>
+
+            <!-- MAGIC SPACER TO PUSH SIGNATURE TO BOTTOM -->
+            <div style="flex-grow:1;"></div>
+
+            <div class="a4-signatures">
+                <div class="a4-sig-box"><div style="margin-bottom:10px;">ในนาม ${cus.name}</div><div style="height:40px;"></div><div class="a4-sig-line"></div><div>ผู้รับเอกสาร / ผู้สั่งซื้อ</div><div style="margin-top:5px;">วันที่ __/__/____</div></div>
+                <div class="a4-sig-box"><div style="margin-bottom:10px;">ในนาม ${comp.companyName}</div>${sigHtml}<div class="a4-sig-line"></div><div>ผู้อนุมัติ</div><div style="margin-top:5px;">วันที่ ${doc.date}</div></div>
+            </div>
+            <div class="a4-footer-brand">เอกสารออกโดย <span>AI Business & LINE OA Automation</span></div>
+        </div>
+
+        <!-- PAGE 2: PAYMENT INFO (Only show if QT, BL, or INV and not Paid) -->
+        ${(doc.type === 'QT' || doc.type === 'INV' || doc.type === 'BL') && doc.status !== 'paid' ? `
+        <div class="a4-page">
+            <div class="tri-blue"></div>
+            <div class="a4-header-grid" style="margin-bottom:0;">
+                <div class="a4-header-left">${logoHtml}</div>
+                <div class="a4-header-right"><div class="a4-doc-meta" style="border:none;"><div class="a4-doc-title" style="color:#0ea5e9;">ข้อมูลการชำระเงิน</div></div></div>
+            </div>
+            <div style="font-size:12px; color:#475569; margin-bottom:30px; border-bottom:1px solid #e2e8f0; padding-bottom:20px;"><div style="font-weight:700; color:#0f172a; font-size:14px; margin-bottom:4px;">${comp.companyName}</div>เลขประจำตัวผู้เสียภาษี ${comp.taxId}</div>
+            <div style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:15px;">โอนเงินผ่านธนาคาร / QR Code</div>
+            <div class="a4-bank-box">
+                <div style="display:flex; align-items:center;">
+                    ${bankLogo}
+                    <div class="a4-bank-info"><div class="a4-bank-acc" style="color:#0f172a !important;">${comp.bankAcc}</div><div style="color:#475569 !important;">${comp.bankName} (สาขา ${comp.bankBranch})</div><div style="margin-top:2px; color:#475569 !important;">ชื่อบัญชี: ${comp.bankOwner}</div></div>
+                </div>
+                <div>${qrHtml}</div>
+            </div>
+
+            <!-- MAGIC SPACER TO PUSH FOOTER TO BOTTOM -->
+            <div style="flex-grow:1;"></div>
+
+            <div class="a4-footer-brand">เอกสารออกโดย <span>AI Business & LINE OA Automation</span></div>
+        </div>
+        ` : ''}
+    `;
+}
+
+function openPreview(docId) { const doc = DB.documents.find(d=>d.id === docId); if(doc) openPreviewData(doc); }
+function openPreviewData(doc) {
+    const meta = DOC_META[doc.type];
+    const html = `
+        <div class="modal-header"><span>${doc.isDraft ? '🔍 ตัวอย่าง A4' : '📄 ' + doc.id}</span><button class="modal-close" onclick="closeModal()">×</button></div>
+        <div class="modal-body" style="background:var(--pdf-bg);">
+            <div class="a4-wrapper">
+                ${generateInvoiceHTML(doc)}
+            </div>
+        </div>
+        <div style="padding:16px 24px; background:var(--card); border-top:1px solid var(--border); border-radius:0 0 16px 16px; display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap; flex-shrink:0;">
+            <button class="btn btn-ghost" onclick="closeModal()">ปิด</button>
+            ${!doc.isDraft ? `<button class="btn btn-ghost" style="color:var(--accent); border-color:var(--accent);" onclick="copyShareLink('${doc.id}')">🔗 สร้างลิงก์ส่งลูกค้า (เปิดผ่านเว็บ)</button><button class="btn btn-primary" onclick="printInvoice('${doc.id}')">🖨️ พิมพ์ / บันทึก PDF</button>` : `<button class="btn btn-primary" style="background:${meta.hex}" onclick="closeModal(); saveDraftDoc();">💾 บันทึกเอกสาร</button>`}
+        </div>
+    `;
+    showModal(html, true);
+}
+
+// 🌐 SHARE LINK FEATURE (Standalone Web Print)
+function copyShareLink(id) { 
+    const doc = DB.documents.find(d=>d.id === id);
+    const cus = DB.customers.find(c=>c.id === doc.customerId) || {name:'-', phone:'-', taxId:'-'};
+    
+    // To prevent URL Too Long errors, we remove heavy base64 images from the shared payload.
+    const shareComp = { ...DB.settings, logo: '', signature: '', qrCode: '' };
+    
+    const payload = { doc, cus, comp: shareComp };
+    const encodedData = utoa(JSON.stringify(payload));
+    const shareUrl = window.location.origin + window.location.pathname + '?public_doc=' + encodedData;
+
+    const tempInput = document.createElement("input"); 
+    tempInput.value = shareUrl; 
+    document.body.appendChild(tempInput); 
+    tempInput.select(); 
+    document.execCommand("copy"); 
+    document.body.removeChild(tempInput); 
+    
+    showToast(`คัดลอกลิงก์เรียบร้อย! ส่งให้ลูกค้าเปิดดูบนเว็บและสั่งปริ้นได้ทันทีโดยไม่ต้องล็อกอิน`, true); 
+}
+
+function printInvoice(id) { 
+    const doc = DB.documents.find(d=>d.id === id); 
+    const p = document.getElementById('print-area'); 
+    p.innerHTML = `<div class="a4-wrapper">${generateInvoiceHTML(doc)}</div>`; 
+    setTimeout(() => { window.print(); }, 300); 
+}
+function deleteDoc(id) { if(confirm('ลบเอกสารนี้ถาวร?')) { const type = DB.documents.find(d=>d.id===id).type; DB.documents = DB.documents.filter(d=>d.id!==id); saveDB(); setPage(`docs-${type}`); } }
+
+/* ==========================================
+   8. REPORTS, LINE OA, SETTINGS & MODALS
+   ========================================== */
+function renderReports() {
+    const paidDocs = DB.documents.filter(d=> d.status === 'paid' || d.type === 'RE');
+    let totalRev = paidDocs.reduce((s,d)=>s+d.total, 0);
+    return `<div class="fade-up">
+        <div class="grid-3"><div class="card"><div class="kpi-label">รายได้รวม (YTD)</div><div class="kpi-value" style="color:var(--green)">฿${formatMoney(totalRev)}</div></div><div class="card"><div class="kpi-label">ยอดค้างชำระ (AR)</div><div class="kpi-value" style="color:var(--yellow)">฿${formatMoney(DB.documents.filter(d=>d.status==='unpaid').reduce((s,d)=>s+d.total,0))}</div></div><div class="card"><div class="kpi-label">ใบเสนอราคาที่ส่งแล้ว</div><div class="kpi-value" style="color:var(--teal)">${DB.documents.filter(d=>d.type==='QT').length} ใบ</div></div></div>
+        <div class="card"><span class="section-title">รายงานการออกเอกสารทั้งหมด</span><div class="table-wrap"><table><thead><tr><th>ประเภท</th><th>เลขที่</th><th>วันที่</th><th>ยอดเงินสุทธิ</th><th>สถานะ</th></tr></thead><tbody>${[...DB.documents].reverse().map(d=>`<tr><td>${DOC_META[d.type].title}</td><td>${d.id}</td><td>${d.date}</td><td>฿${formatMoney(d.total)}</td><td>${getStatusBadge(d.status,d.type)}</td></tr>`).join('')}</tbody></table></div></div>
+    </div>`;
+}
+
+function renderLineOA() {
+    return `<div class="grid-2 fade-up">
+        <div class="card"><div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;"><div style="width:40px; height:40px; border-radius:10px; background:#06c75520; display:flex; align-items:center; justify-content:center; font-size:18px;">💬</div><div><div style="font-size:14px; font-weight:600;">LINE OA Automation</div><div style="font-size:12px; color:var(--green);">● เชื่อมต่อ API แล้ว</div></div></div>
+        ${[["Channel ID","@bizflow_th"],["Channel Access Token","<div style='word-break: break-all; font-size:10px; line-height:1.4;'>Gq4K84bdzZJdD4fCAulgDtTHqmCf+/SAiqDriW+OfTTr2JB7tMrAqUVjjHuv6KZki+3DP+ABRhBKf3NTZs31Z2YWTjpPMIDiVRzdOPPNsfOUEKz0ZzdZRs/mDeuD9118wubVQfYOs0dCOOmZSU9G7QdB04t89/1O/w1cDnyilFU=</div>"],["Webhook URL","https://api.bizflow.app/webhook"]].map(([k,v])=>`<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); font-size:13px; flex-direction:column; gap:6px;"><span style="color:var(--muted); font-weight:bold;">${k}</span><span style="color:var(--accent)">${v}</span></div>`).join('')}
+        <div style="margin-top:20px;"><label style="display:flex; justify-content:space-between; font-size:13px;"><span style="color:var(--text)">แจ้งเตือนเมื่อออกบิลใหม่</span><input type="checkbox" checked></label></div></div>
+        <div class="card"><span class="section-title">Chatbot Preview</span><div style="background:var(--surface); border-radius:12px; padding:16px; min-height:180px;"><div style="background:var(--card); border:1px solid var(--border); padding:12px; border-radius:12px 12px 12px 0; max-width:80%; font-size:13px; margin-bottom:10px;">ขอดูใบแจ้งหนี้ล่าสุดครับ</div><div style="background:var(--accentSoft); border:1px solid var(--accent); color:var(--accentHover); padding:12px; border-radius:12px 12px 0 12px; max-width:80%; margin-left:auto; font-size:13px;">คุณมียอดค้างชำระ 1 รายการ ฿26,750<br>คลิกเพื่อดูเอกสาร: <a href="#" style="color:inherit">ลิงก์</a></div></div></div>
+    </div>`;
+}
+
+function renderSettings() {
+    const comp = DB.settings;
+    return `
+        <div class="grid-2 fade-up">
+            <div class="card">
+                <span class="section-title">ข้อมูลบริษัท & รูปภาพ (สำหรับหัวกระดาษ)</span>
+                <div class="grid-2">
+                    <div class="form-group"><label>อัปโหลดโลโก้</label><div style="display:${comp.logo?'block':'none'}; background:#fff; border:1px solid var(--border); border-radius:8px; padding:4px; margin-bottom:8px;"><img id="logo-preview" src="${comp.logo}" style="width:100%; height:60px; object-fit:contain;"></div><input type="file" accept="image/*" class="form-control" style="padding:8px; font-size:11px;" onchange="previewUpload(this, 'logo-preview', 'logo')"></div>
+                    <div class="form-group"><label>ลายเซ็นผู้อนุมัติ</label><div style="display:${comp.signature?'block':'none'}; background:#fff; border:1px solid var(--border); border-radius:8px; padding:4px; margin-bottom:8px;"><img id="sig-preview" src="${comp.signature}" style="width:100%; height:60px; object-fit:contain;"></div><input type="file" accept="image/*" class="form-control" style="padding:8px; font-size:11px;" onchange="previewUpload(this, 'sig-preview', 'sig')"></div>
+                </div>
+                <div class="form-group"><label>ชื่อบริษัท / ร้านค้า</label><input id="s-name" class="form-control" value="${comp.companyName}"></div>
+                <div class="form-group"><label>เลขผู้เสียภาษี</label><input id="s-tax" class="form-control" value="${comp.taxId}"></div>
+                <div class="form-group"><label>ที่อยู่</label><textarea id="s-addr" class="form-control" rows="3">${comp.address}</textarea></div>
+                <div class="form-group"><label>ชื่อผู้ออกเอกสาร</label><input id="s-issuer" class="form-control" value="${comp.issuerName}"></div>
+            </div>
+            <div>
+                <div class="card" style="margin-bottom:16px;">
+                    <span class="section-title">ข้อมูลธนาคาร & QR Code (รับโอนเงิน)</span>
+                    <div class="form-group" style="margin-bottom:20px;"><label>QR Code รับเงิน (อัปโหลด)</label><div style="display:${comp.qrCode?'block':'none'}; background:#fff; border:1px solid var(--border); border-radius:8px; padding:4px; margin-bottom:8px; width:100px;"><img id="qr-preview" src="${comp.qrCode}" style="width:100%; height:90px; object-fit:contain;"></div><input type="file" accept="image/*" class="form-control" style="padding:8px; font-size:11px;" onchange="previewUpload(this, 'qr-preview', 'qr')"></div>
+                    <div class="form-group"><label>ชื่อธนาคาร</label><input id="s-bname" class="form-control" value="${comp.bankName}"></div>
+                    <div class="form-group"><label>เลขบัญชี</label><input id="s-bacc" class="form-control" value="${comp.bankAcc}"></div>
+                    <div class="grid-2"><div class="form-group"><label>สาขา</label><input id="s-bbranch" class="form-control" value="${comp.bankBranch}"></div><div class="form-group"><label>ชื่อบัญชี</label><input id="s-bowner" class="form-control" value="${comp.bankOwner}"></div></div>
+                </div>
+                <button class="btn btn-primary" style="width:100%; justify-content:center; padding:12px; font-size:15px;" onclick="saveSettings()">💾 บันทึกการตั้งค่า</button>
+            </div>
+        </div>
+    `;
+}
+
+let tempLogo = DB.settings.logo, tempSig = DB.settings.signature, tempQr = DB.settings.qrCode;
+function previewUpload(input, imgId, type) { 
+    if (input.files && input.files[0]) { 
+        const reader = new FileReader(); 
+        reader.onload = function(e) { 
+            if(type === 'logo') DB.settings.logo = e.target.result; 
+            if(type === 'sig') DB.settings.signature = e.target.result; 
+            if(type === 'qr') DB.settings.qrCode = e.target.result; 
+            document.getElementById(imgId).src = e.target.result; document.getElementById(imgId).parentElement.style.display = 'block'; 
+        }; reader.readAsDataURL(input.files[0]); 
+    } 
+}
+function saveSettings() { 
+    DB.settings.companyName = document.getElementById('s-name').value; 
+    DB.settings.taxId = document.getElementById('s-tax').value; 
+    DB.settings.address = document.getElementById('s-addr').value; 
+    DB.settings.issuerName = document.getElementById('s-issuer').value;
+    DB.settings.bankName = document.getElementById('s-bname').value; 
+    DB.settings.bankAcc = document.getElementById('s-bacc').value; 
+    DB.settings.bankBranch = document.getElementById('s-bbranch').value; 
+    DB.settings.bankOwner = document.getElementById('s-bowner').value; 
+    saveDB(); showToast('บันทึกสำเร็จ'); renderSidebar(); 
+}
+
+// Inline & Modal Customers/Products
+let isInlineAdd = false;
+function openCustomerModal(inline = false) { isInlineAdd = inline; showModal(`<div class="modal-header"><span>เพิ่มลูกค้า</span><button class="modal-close" onclick="closeModal()">×</button></div><div class="modal-body"><div class="form-group"><label>ชื่อลูกค้า *</label><input id="c-name" class="form-control"></div><div class="form-group"><label>เลขผู้เสียภาษี</label><input id="c-tax" class="form-control"></div><div class="form-group"><label>เบอร์โทร</label><input id="c-phone" class="form-control"></div><button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="saveCustomer()">บันทึก</button></div>`); }
+function saveCustomer() { 
+    const name = document.getElementById('c-name').value; if(!name) return alert('กรอกชื่อลูกค้า'); 
+    const newCus = { id: generateId('C'), name, taxId: document.getElementById('c-tax').value, phone: document.getElementById('c-phone').value };
+    DB.customers.push(newCus); saveDB(); closeModal(); showToast('บันทึกลูกค้าแล้ว');
+    if(isInlineAdd && document.getElementById('form-cus')) { document.getElementById('form-cus').innerHTML += `<option value="${newCus.id}">${newCus.name}</option>`; document.getElementById('form-cus').value = newCus.id; draftDoc.customerId = newCus.id; } else { setPage('customers'); }
+}
+function deleteCustomer(id) { if(confirm('ลบลูกค้านี้?')) { DB.customers = DB.customers.filter(c=>c.id!==id); saveDB(); setPage('customers'); } }
+
+function openProductModal() { showModal(`<div class="modal-header"><span>เพิ่มสินค้า</span><button class="modal-close" onclick="closeModal()">×</button></div><div class="modal-body"><div class="form-group"><label>ชื่อ *</label><input id="p-name" class="form-control"></div><div class="form-group"><label>ราคา *</label><input id="p-price" type="number" class="form-control" value="0"></div><button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="saveProduct()">บันทึก</button></div>`); }
+function saveProduct() { const name = document.getElementById('p-name').value, price = document.getElementById('p-price').value; if(!name) return alert('กรอกชื่อ'); DB.products.push({ id: generateId('P'), name, price: Number(price) }); saveDB(); closeModal(); setPage('products'); showToast('บันทึกสินค้าแล้ว'); }
+function deleteProduct(id) { if(confirm('ลบสินค้านี้?')) { DB.products = DB.products.filter(p=>p.id!==id); saveDB(); setPage('products'); } }
+
+function showModal(html, isLarge = false) { const box = document.getElementById('modal-box'); box.className = 'modal-box' + (isLarge ? ' modal-lg' : ''); box.innerHTML = html; document.getElementById('modal').classList.add('active'); }
+function closeModal() { document.getElementById('modal').classList.remove('active'); }
+
+/* ==========================================
+   9. INITIALIZATION & PUBLIC VIEWER LOGIC
+   ========================================== */
+const urlParams = new URLSearchParams(window.location.search);
+const publicDocStr = urlParams.get('public_doc');
+
+if (publicDocStr) {
+    // 🌐 PUBLIC VIEWER MODE (When customer clicks the shared link)
+    try {
+        const payload = JSON.parse(atou(publicDocStr));
+        document.body.classList.add('light-mode');
+        document.body.innerHTML = `
+            <style>
+                body { background: var(--pdf-bg); display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; min-height: 100vh; }
+                .public-toolbar { width: 100%; max-width: 210mm; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #0f172a; padding: 15px 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); flex-wrap: wrap; gap: 10px; }
+                .public-title { color: #f8fafc; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; display:flex; align-items:center; gap:8px;}
+                .public-btn { font-family: 'DM Sans', 'Sarabun', sans-serif; font-size: 14px; padding: 10px 20px; background: #0ea5e9; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+                .public-btn:hover { background: #0284c7; }
+                @media print { .public-toolbar { display: none !important; } body { padding: 0; background: #fff; } .a4-page { box-shadow: none; margin: 0; border-radius: 0; } }
+                @media (max-width: 768px) { .public-toolbar { flex-direction: column; text-align: center; } .a4-wrapper { transform: scale(0.42) !important; transform-origin: top center; margin-bottom: -150% !important;} }
+            </style>
+            <div class="public-toolbar">
+                <div class="public-title"><span>เอกสารถูกส่งจาก:</span> <span style="color:#0ea5e9">${payload.comp.companyName}</span></div>
+                <button class="public-btn" onclick="window.print()">🖨️ พิมพ์เอกสาร / บันทึก PDF</button>
+            </div>
+            <div class="a4-wrapper">
+                ${generateInvoiceHTML(payload.doc, payload.cus, payload.comp)}
+            </div>
+        `;
+    } catch (e) {
+        document.body.innerHTML = `<div style="padding:50px; text-align:center; color:white; font-family:'Sarabun', sans-serif;"><h2>เกิดข้อผิดพลาด ⚠️</h2><p>ลิงก์เอกสารไม่ถูกต้อง หรือข้อมูลเสียหาย</p></div>`;
+    }
+} else {
+    // NORMAL APP MODE
+    setPage('dashboard');
+}
+</script>
+</body>
+</html>
