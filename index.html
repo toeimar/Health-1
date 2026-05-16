@@ -1,18 +1,14 @@
 <!DOCTYPE html>
-
 <html lang="th">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>BizFlow — ระบบบัญชีออนไลน์</title>
+<title>BizFlow — ระบบบัญชีออนไลน์ (พร้อมใช้งาน)</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 
-<!-- Firebase CDN (compat mode — ใช้ได้ทั้ง file:// และ http://) -->
-
+<!-- Firebase CDN (compat mode) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
 
 <script>
@@ -25,9 +21,13 @@
     appId: "1:192153937390:web:64084318710e94abe05aff",
     measurementId: "G-XX08T7S22R"
   };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  try { firebase.analytics(); } catch(e) {}
+  try {
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    firebase.analytics();
+  } catch(e) {
+    console.log("Firebase Init Error (Offline mode fallback):", e);
+  }
 </script>
 
 <style>
@@ -302,14 +302,14 @@ tbody tr:hover td { background:var(--subtle); }
 .a4-table th { padding:9px 8px; font-size:9.5pt; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:#475569; text-align:right; }
 .a4-table th:first-child,.a4-table th:nth-child(2) { text-align:left; }
 .a4-table th:first-child { width:28px; }
-.a4-table tbody tr { border-bottom:1px solid #f1f5f9; }
+.a4-table tbody tr { border-bottom:1px solid #f1f5f9; page-break-inside: avoid; }
 .a4-table tbody tr:last-child { border-bottom:none; }
 .a4-table td { padding:10px 8px; font-size:11pt; color:#1e293b; text-align:right; vertical-align:top; line-height:1.6; }
 .a4-table td:first-child,.a4-table td:nth-child(2) { text-align:left; }
 .a4-table td:first-child { color:#94a3b8; font-size:10pt; }
 .a4-table td:nth-child(2) { font-weight:500; }
 
-.a4-totals-grid { display:grid; grid-template-columns:1fr 270px; gap:18px; margin-bottom:20px; }
+.a4-totals-grid { display:grid; grid-template-columns:1fr 270px; gap:18px; margin-bottom:20px; page-break-inside: avoid; }
 .a4-baht-text { font-size:10.5pt; color:#475569; font-style:italic; background:#f8fafc; border-radius:8px; padding:10px 12px; line-height:1.6; }
 .a4-trow { display:flex; justify-content:space-between; padding:5px 0; font-size:11pt; color:#475569; }
 .a4-trow.bold { font-weight:700; color:#0f172a; font-size:11.5pt; }
@@ -318,7 +318,7 @@ tbody tr:hover td { background:var(--subtle); }
 .a4-trow-val { font-family:'IBM Plex Mono',monospace; }
 .a4-trow.red { color:#dc2626; }
 
-.a4-sigs { display:grid; grid-template-columns:1fr 1fr; gap:44px; margin-top:auto; padding-top:24px; }
+.a4-sigs { display:grid; grid-template-columns:1fr 1fr; gap:44px; margin-top:auto; padding-top:24px; page-break-inside: avoid; }
 .a4-sig { text-align:center; }
 .a4-sig-space { height:60px; display:flex; align-items:flex-end; justify-content:center; margin-bottom:8px; }
 .a4-sig-space img { max-height:54px; max-width:140px; object-fit:contain; mix-blend-mode:multiply; }
@@ -326,7 +326,7 @@ tbody tr:hover td { background:var(--subtle); }
 .a4-sig-name { font-size:11.5pt; font-weight:700; color:#0f172a; margin-bottom:2px; }
 .a4-sig-date { font-size:9.5pt; color:#94a3b8; margin-top:3px; }
 
-.a4-payment-section { margin-top:32px; }
+.a4-payment-section { margin-top:32px; page-break-inside: avoid; }
 .a4-payment-title { font-size:13.5pt; font-weight:700; color:#0f172a; margin-bottom:16px; }
 .a4-bank-card { border:1.5px solid #e2e8f0; border-radius:14px; padding:20px; display:flex; align-items:center; gap:18px; margin-bottom:16px; }
 .a4-bank-logo-circle { width:46px; height:46px; border-radius:50%; background:#f59e0b; display:flex; align-items:center; justify-content:center; color:#fff; font-size:17px; font-weight:700; flex-shrink:0; }
@@ -342,13 +342,14 @@ tbody tr:hover td { background:var(--subtle); }
 
 /* PRINT */
 @media print {
-  @page { size:A4; margin:0; }
-  body { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; background:#fff; overflow:visible; }
-  .app,.toasts,.modal-backdrop { display:none !important; }
-  #print-area { display:block !important; }
-  .a4-page { box-shadow:none; page-break-after:always; page-break-inside:avoid; border-radius:0; }
-  .a4-page:last-child { page-break-after:auto; }
-  .pub-toolbar { display:none !important; }
+  @page { size: A4; margin: 0mm; }
+  html, body { width: 210mm; height: 297mm; overflow: visible; background: #fff; margin: 0; padding: 0; }
+  body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .app, .toasts, .modal-backdrop, .pub-toolbar { display: none !important; }
+  #print-area { display: block !important; margin: 0; padding: 0; }
+  .a4-wrapper { margin: 0; padding: 0; }
+  .a4-page { box-shadow: none; border-radius: 0; transform: none !important; margin: 0 !important; width: 210mm; min-height: 297mm; page-break-after: always; }
+  .a4-page:last-child { page-break-after: auto; }
 }
 #print-area { display:none; }
 
@@ -395,7 +396,6 @@ tbody tr:hover td { background:var(--subtle); }
   .pub-page { padding:12px; }
 }
 </style>
-
 </head>
 <body>
 
@@ -1240,29 +1240,35 @@ function shareDoc(id) {
   const payload={doc,cus,comp,createdAt:Date.now()};
 
   toast('กำลังสร้างลิงก์...','warn');
-  db.collection('shared_docs').doc(shareId).set(payload)
-    .then(()=>{
-      const url=`${location.href.split('?')[0]}?share=${shareId}`;
-      if(navigator.clipboard) {
-        navigator.clipboard.writeText(url).then(()=>toast('คัดลอกลิงก์แล้ว — ส่งให้ลูกค้าได้ทันที','link'));
-      } else {
-        const inp=document.createElement('input'); inp.value=url;
-        document.body.appendChild(inp); inp.select(); document.execCommand('copy'); inp.remove();
-        toast('คัดลอกลิงก์แล้ว — ส่งให้ลูกค้าได้ทันที','link');
-      }
-    })
-    .catch(()=>{
-      // Fallback: base64 (ไม่มีรูป)
-      const stripped={...comp,logo:'',signature:'',qrCode:''};
-      const url=`${location.href.split('?')[0]}?pub=${utoa(JSON.stringify({doc,cus,comp:stripped}))}`;
-      if(navigator.clipboard){
-        navigator.clipboard.writeText(url).then(()=>toast('คัดลอกลิงก์แล้ว (offline mode)','link'));
-      } else {
-        const inp=document.createElement('input'); inp.value=url;
-        document.body.appendChild(inp); inp.select(); document.execCommand('copy'); inp.remove();
-        toast('คัดลอกลิงก์แล้ว (offline mode)','link');
-      }
-    });
+  
+  if (typeof db !== 'undefined') {
+    db.collection('shared_docs').doc(shareId).set(payload)
+      .then(()=>{
+        const url=`${location.href.split('?')[0]}?share=${shareId}`;
+        copyToClipboard(url, 'คัดลอกลิงก์แล้ว — ส่งให้ลูกค้าได้ทันที');
+      })
+      .catch(()=>{
+        fallbackShare(doc, cus, comp);
+      });
+  } else {
+    fallbackShare(doc, cus, comp);
+  }
+}
+
+function fallbackShare(doc, cus, comp) {
+  const stripped={...comp,logo:'',signature:'',qrCode:''};
+  const url=`${location.href.split('?')[0]}?pub=${utoa(JSON.stringify({doc,cus,comp:stripped}))}`;
+  copyToClipboard(url, 'คัดลอกลิงก์แล้ว (offline mode)');
+}
+
+function copyToClipboard(text, msg) {
+  if(navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(()=>toast(msg,'link'));
+  } else {
+    const inp=document.createElement('input'); inp.value=text;
+    document.body.appendChild(inp); inp.select(); document.execCommand('copy'); inp.remove();
+    toast(msg,'link');
+  }
 }
 
 /* ═══════════════════════════════════════
@@ -1331,7 +1337,7 @@ function renderLine() {
    SETTINGS
 ═══════════════════════════════════════ */
 function renderSettings() {
-  const s=DB.settings;
+  const s = DB.settings;
   return `
   <div class="g2 fu">
     <div class="card">
@@ -1351,97 +1357,118 @@ function renderSettings() {
       <div class="form-group"><label class="form-label">ชื่อบริษัท / ร้านค้า</label><input id="s-name" class="form-control" value="${s.companyName}"></div>
       <div class="form-group"><label class="form-label">เลขผู้เสียภาษี</label><input id="s-tax" class="form-control" value="${s.taxId}"></div>
       <div class="form-group"><label class="form-label">ที่อยู่</label><textarea id="s-addr" class="form-control" rows="3">${s.address}</textarea></div>
-
-```
-  <div class="form-group"><label class="form-label">ชื่อผู้ออกเอกสาร</label><input id="s-issuer" class="form-control" value="${s.issuerName}"></div>
-</div>
-<div>
-  <div class="card">
-    <span class="sec-title">🏦 ข้อมูลธนาคาร & QR Code</span>
-    <div class="form-group">
-      <label class="form-label">QR Code รับเงิน</label>
-      ${s.qrCode?`<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px;width:100px;margin-bottom:8px"><img id="qr-prev" src="${s.qrCode}" style="width:100%;height:90px;object-fit:contain"></div>`:`<div id="qr-prev-wrap"></div>`}
-      <input type="file" accept="image/*" class="form-control" style="padding:8px;font-size:11.5px" onchange="uploadImg(this,'qr','qr-prev')">
+      <div class="form-group"><label class="form-label">ชื่อผู้ออกเอกสาร</label><input id="s-issuer" class="form-control" value="${s.issuerName}"></div>
     </div>
-    <div class="g2" style="margin-bottom:0">
-      <div class="form-group"><label class="form-label">ชื่อธนาคาร</label><input id="s-bname" class="form-control" value="${s.bankName}"></div>
-      <div class="form-group"><label class="form-label">เลขบัญชี</label><input id="s-bacc" class="form-control" value="${s.bankAcc}"></div>
-      <div class="form-group"><label class="form-label">สาขา</label><input id="s-bbranch" class="form-control" value="${s.bankBranch}"></div>
-      <div class="form-group"><label class="form-label">ชื่อบัญชี</label><input id="s-bowner" class="form-control" value="${s.bankOwner}"></div>
+    
+    <div>
+      <div class="card">
+        <span class="sec-title">🏦 ข้อมูลธนาคาร & QR Code</span>
+        <div class="form-group">
+          <label class="form-label">QR Code รับเงิน</label>
+          ${s.qrCode?`<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px;width:100px;margin-bottom:8px"><img id="qr-prev" src="${s.qrCode}" style="width:100%;height:90px;object-fit:contain"></div>`:`<div id="qr-prev-wrap"></div>`}
+          <input type="file" accept="image/*" class="form-control" style="padding:8px;font-size:11.5px" onchange="uploadImg(this,'qr','qr-prev')">
+        </div>
+        <div class="g2" style="margin-bottom:0">
+          <div class="form-group"><label class="form-label">ชื่อธนาคาร</label><input id="s-bname" class="form-control" value="${s.bankName}"></div>
+          <div class="form-group"><label class="form-label">เลขบัญชี</label><input id="s-bacc" class="form-control" value="${s.bankAcc}"></div>
+          <div class="form-group"><label class="form-label">สาขา</label><input id="s-bbranch" class="form-control" value="${s.bankBranch}"></div>
+          <div class="form-group"><label class="form-label">ชื่อบัญชี</label><input id="s-bowner" class="form-control" value="${s.bankOwner}"></div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center" onclick="saveSettings()">💾 บันทึกการตั้งค่า</button>
     </div>
-  </div>
-  <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center" onclick="saveSettings()">💾 บันทึกการตั้งค่า</button>
-</div>
-```
-
   </div>`;
 }
 
-function uploadImg(input,key,imgId) {
-if(!input.files||!input.files[0])return;
-const r=new FileReader();
-r.onload=e=>{
-DB.settings[key===‘logo’?‘logo’:key===‘sig’?‘signature’:‘qrCode’]=e.target.result;
-let el=document.getElementById(imgId);
-if(!el){
-const wrap=document.getElementById(imgId+’-wrap’);
-if(wrap) wrap.innerHTML=`<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px;margin-bottom:8px"><img id="${imgId}" src="${e.target.result}" style="width:100%;height:56px;object-fit:contain"></div>`;
-} else { el.src=e.target.result; }
-};
-r.readAsDataURL(input.files[0]);
+function uploadImg(input, key, imgId) {
+  if(!input.files || !input.files[0]) return;
+  const r = new FileReader();
+  r.onload = e => {
+    DB.settings[key === 'logo' ? 'logo' : key === 'sig' ? 'signature' : 'qrCode'] = e.target.result;
+    let el = document.getElementById(imgId);
+    if(!el){
+      const wrap = document.getElementById(imgId + '-wrap');
+      if(wrap) wrap.innerHTML = `<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px;margin-bottom:8px"><img id="${imgId}" src="${e.target.result}" style="width:100%;height:56px;object-fit:contain"></div>`;
+    } else { 
+      el.src = e.target.result; 
+    }
+  };
+  r.readAsDataURL(input.files[0]);
 }
 
 function saveSettings() {
-const s=DB.settings;
-s.companyName=document.getElementById(‘s-name’).value;
-s.taxId=document.getElementById(‘s-tax’).value;
-s.address=document.getElementById(‘s-addr’).value;
-s.issuerName=document.getElementById(‘s-issuer’).value;
-s.bankName=document.getElementById(‘s-bname’).value;
-s.bankAcc=document.getElementById(‘s-bacc’).value;
-s.bankBranch=document.getElementById(‘s-bbranch’).value;
-s.bankOwner=document.getElementById(‘s-bowner’).value;
-saveDB(); toast(‘บันทึกการตั้งค่าแล้ว’); renderNav();
+  const s = DB.settings;
+  s.companyName = document.getElementById('s-name').value;
+  s.taxId = document.getElementById('s-tax').value;
+  s.address = document.getElementById('s-addr').value;
+  s.issuerName = document.getElementById('s-issuer').value;
+  s.bankName = document.getElementById('s-bname').value;
+  s.bankAcc = document.getElementById('s-bacc').value;
+  s.bankBranch = document.getElementById('s-bbranch').value;
+  s.bankOwner = document.getElementById('s-bowner').value;
+  saveDB(); 
+  toast('บันทึกการตั้งค่าแล้ว'); 
+  renderNav();
 }
 
 /* ═══════════════════════════════════════
-PUBLIC VIEWER — ?share= หรือ ?pub=
+   PUBLIC VIEWER — ?share= หรือ ?pub=
 ═══════════════════════════════════════ */
 function showPublicViewer(data) {
-if(!data){
-document.body.innerHTML=`<div style="padding:60px;text-align:center;font-family:'IBM Plex Sans Thai',sans-serif;color:#666"><h2>⚠️ ไม่พบเอกสาร</h2><p>ลิงก์นี้อาจหมดอายุหรือไม่ถูกต้อง กรุณาติดต่อผู้ส่งเอกสาร</p></div>`;
-return;
-}
-const {doc,cus,comp}=data;
-document.body.classList.add(‘light’);
-document.body.style.overflow=‘auto’;
-document.getElementById(‘app-root’).style.display=‘none’;
-const loading=document.getElementById(‘share-loading’);
-if(loading)loading.remove();
-document.body.insertAdjacentHTML(‘beforeend’,` <div class="pub-page"> <div class="pub-toolbar"> <div class="pub-from">เอกสารจาก: <strong>${comp.companyName}</strong></div> <button class="pub-print" onclick="window.print()">🖨️ พิมพ์ / บันทึก PDF</button> </div> <div class="a4-wrapper">${genA4HTML(doc,cus,comp)}</div> </div>`);
+  if(!data){
+    document.body.innerHTML=`<div style="padding:60px;text-align:center;font-family:'IBM Plex Sans Thai',sans-serif;color:#666"><h2>⚠️ ไม่พบเอกสาร</h2><p>ลิงก์นี้อาจหมดอายุหรือไม่ถูกต้อง กรุณาติดต่อผู้ส่งเอกสาร</p></div>`;
+    return;
+  }
+  const {doc, cus, comp} = data;
+  document.body.classList.add('light');
+  document.body.style.overflow='auto';
+  document.getElementById('app-root').style.display='none';
+  const loading = document.getElementById('share-loading');
+  if(loading) loading.remove();
+  
+  document.body.insertAdjacentHTML('beforeend',`
+    <div class="pub-page">
+      <div class="pub-toolbar">
+        <div class="pub-from">เอกสารจาก: <strong>${comp.companyName}</strong></div>
+        <button class="pub-print" onclick="window.print()">🖨️ พิมพ์ / บันทึก PDF</button>
+      </div>
+      <div class="a4-wrapper" id="print-area" style="display:block !important;">${genA4HTML(doc,cus,comp)}</div>
+    </div>
+  `);
 }
 
-const _shareId=new URLSearchParams(location.search).get(‘share’);
-const _pub=new URLSearchParams(location.search).get(‘pub’);
+const _shareId = new URLSearchParams(location.search).get('share');
+const _pub = new URLSearchParams(location.search).get('pub');
 
 if(_shareId){
-document.getElementById(‘app-root’).style.display=‘none’;
-document.body.insertAdjacentHTML(‘beforeend’,` <div class="share-loading" id="share-loading"> <div class="share-loading-inner"> <div class="share-loading-spinner"></div> <div>กำลังโหลดเอกสาร...</div> </div> </div>`);
-db.collection(‘shared_docs’).doc(_shareId).get()
-.then(snap=>{
-showPublicViewer(snap.exists?snap.data():null);
-})
-.catch(()=>{
-showPublicViewer(null);
-});
+  document.getElementById('app-root').style.display='none';
+  document.body.insertAdjacentHTML('beforeend',`
+    <div class="share-loading" id="share-loading">
+      <div class="share-loading-inner">
+        <div class="share-loading-spinner"></div>
+        <div>กำลังโหลดเอกสาร...</div>
+      </div>
+    </div>
+  `);
+  if (typeof db !== 'undefined') {
+    db.collection('shared_docs').doc(_shareId).get()
+      .then(snap => {
+        showPublicViewer(snap.exists ? snap.data() : null);
+      })
+      .catch(() => {
+        showPublicViewer(null);
+      });
+  } else {
+    showPublicViewer(null);
+  }
 } else if(_pub){
-try {
-showPublicViewer(JSON.parse(atou(_pub)));
-} catch {
-document.body.innerHTML=`<div style="padding:60px;text-align:center;font-family:'IBM Plex Sans Thai',sans-serif;color:#666"><h2>⚠️ ลิงก์ไม่ถูกต้อง</h2><p>กรุณาติดต่อผู้ส่งเอกสาร</p></div>`;
-}
+  try {
+    showPublicViewer(JSON.parse(atou(_pub)));
+  } catch {
+    document.body.innerHTML=`<div style="padding:60px;text-align:center;font-family:'IBM Plex Sans Thai',sans-serif;color:#666"><h2>⚠️ ลิงก์ไม่ถูกต้อง</h2><p>กรุณาติดต่อผู้ส่งเอกสาร</p></div>`;
+  }
 } else {
-setPage(‘dashboard’);
+  setPage('dashboard');
 }
 </script>
 
