@@ -1,16 +1,68 @@
 <!DOCTYPE html>
+
 <html lang="th">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>BizFlow — ระบบบัญชีออนไลน์</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+<!-- Firebase SDK -->
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA5l1QjPRMJEwTXedJFdK20nF7tr7sJuw4",
+    authDomain: "toeibill-5b980.firebaseapp.com",
+    projectId: "toeibill-5b980",
+    storageBucket: "toeibill-5b980.firebasestorage.app",
+    messagingSenderId: "192153937390",
+    appId: "1:192153937390:web:64084318710e94abe05aff",
+    measurementId: "G-XX08T7S22R"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const db = getFirestore(app);
+
+  // Expose to global scope for use in non-module scripts
+  window._fbDb = db;
+  window._fbDoc = doc;
+  window._fbSetDoc = setDoc;
+  window._fbGetDoc = getDoc;
+  window._fbReady = true;
+
+  // Handle public viewer mode via Firestore
+  const params = new URLSearchParams(location.search);
+  const shareId = params.get('share');
+  if (shareId) {
+    window._shareId = shareId;
+    getDoc(doc(db, 'shared_docs', shareId)).then(snap => {
+      if (snap.exists()) {
+        window._shareData = snap.data();
+      } else {
+        window._shareData = null;
+      }
+      window._shareLoaded = true;
+      if (window._onShareLoaded) window._onShareLoaded();
+    }).catch(() => {
+      window._shareData = null;
+      window._shareLoaded = true;
+      if (window._onShareLoaded) window._onShareLoaded();
+    });
+  } else {
+    window._shareLoaded = true;
+  }
+</script>
+
 <style>
 /* ═══════════════════════════════════════
    DESIGN TOKENS
 ═══════════════════════════════════════ */
 :root {
-  /* Palette — Dark (default) */
   --bg:         #0d0f14;
   --surface:    #141720;
   --card:       #1a1e2b;
@@ -76,7 +128,7 @@ body.light {
 ═══════════════════════════════════════ */
 *,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
 html { height:100%; }
-body { height:100%; background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; line-height:1.5; overflow:hidden; transition:background .3s,color .3s; -webkit-font-smoothing:antialiased; }
+body { height:100%; background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; line-height:1.6; overflow:hidden; transition:background .3s,color .3s; -webkit-font-smoothing:antialiased; }
 ::-webkit-scrollbar { width:5px; height:5px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:99px; }
@@ -89,7 +141,6 @@ input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
 ═══════════════════════════════════════ */
 .app { display:flex; height:100%; }
 
-/* Overlay (mobile) */
 #overlay {
   display:none; position:fixed; inset:0; z-index:150;
   background:rgba(0,0,0,.6); backdrop-filter:blur(4px);
@@ -127,10 +178,7 @@ input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
   border-left:3px solid transparent; user-select:none; position:relative;
 }
 .nav-item:hover { color:var(--text); background:var(--subtle); }
-.nav-item.active {
-  color:var(--accent-h); background:var(--accent-s);
-  border-left-color:var(--accent);
-}
+.nav-item.active { color:var(--accent-h); background:var(--accent-s); border-left-color:var(--accent); }
 .nav-icon { width:18px; text-align:center; font-size:15px; flex-shrink:0; }
 .nav-badge {
   margin-left:auto; background:var(--red); color:#fff;
@@ -180,7 +228,6 @@ input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
    COMPONENTS
 ═══════════════════════════════════════ */
 
-/* Buttons */
 .btn {
   display:inline-flex; align-items:center; justify-content:center; gap:7px;
   padding:9px 16px; border-radius:var(--radius); border:none;
@@ -205,7 +252,6 @@ input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
 .btn-ghost:hover { background:var(--subtle); color:var(--text); border-color:var(--border2); }
 .btn-icon { width:34px; height:34px; padding:0; border-radius:9px; }
 
-/* Cards */
 .card {
   background:var(--card); border:1px solid var(--border);
   border-radius:var(--radius-lg); padding:22px; margin-bottom:18px;
@@ -214,21 +260,17 @@ input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
 .card:last-child { margin-bottom:0; }
 .card-sm { padding:16px; }
 
-/* Grid */
 .g4 { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:18px; }
 .g3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-bottom:18px; }
 .g2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin-bottom:18px; }
 
-/* Section Title */
 .sec-title { font-family:var(--font-disp); font-size:14px; font-weight:700; color:var(--text); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
 
-/* KPI */
 .kpi-icon { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; margin-bottom:14px; }
 .kpi-label { font-size:11.5px; color:var(--text-2); margin-bottom:6px; font-weight:500; }
 .kpi-value { font-family:var(--font-disp); font-size:22px; font-weight:700; color:var(--text); line-height:1; }
 .kpi-sub { font-size:12px; color:var(--text-3); margin-top:4px; }
 
-/* Badges */
 .badge {
   display:inline-flex; align-items:center; gap:4px;
   padding:3px 9px; border-radius:6px; font-size:11px; font-weight:700; letter-spacing:.3px;
@@ -242,7 +284,6 @@ input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
 .b-gray   { background:var(--subtle);   color:var(--text-2); }
 .b-blue   { background:var(--accent-s); color:var(--accent-h); }
 
-/* Forms */
 .form-group { margin-bottom:14px; }
 .form-label { display:block; font-size:12px; font-weight:600; color:var(--text-2); margin-bottom:6px; }
 .form-control {
@@ -255,7 +296,25 @@ input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
 .form-control::placeholder { color:var(--text-3); }
 select.form-control { cursor:pointer; }
 
-/* Tables */
+/* Customer combo box */
+.cus-combo { position:relative; }
+.cus-combo-input { width:100%; background:var(--card2); border:1px solid var(--border2); border-radius:9px; padding:9px 12px; color:var(--text); font-family:inherit; font-size:13.5px; outline:none; transition:border-color .15s, box-shadow .15s; }
+.cus-combo-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-s); }
+.cus-combo-input::placeholder { color:var(--text-3); }
+.cus-dropdown {
+  position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:999;
+  background:var(--card); border:1px solid var(--border2); border-radius:10px;
+  box-shadow:var(--shadow); max-height:200px; overflow-y:auto; display:none;
+}
+.cus-dropdown.open { display:block; }
+.cus-opt {
+  padding:10px 14px; font-size:13px; cursor:pointer; color:var(--text);
+  border-bottom:1px solid var(--border); transition:background .1s;
+}
+.cus-opt:last-child { border-bottom:none; }
+.cus-opt:hover { background:var(--subtle); }
+.cus-opt-new { color:var(--accent-h); font-weight:600; }
+
 .tbl-wrap {
   background:var(--card); border:1px solid var(--border);
   border-radius:var(--radius-lg); overflow-x:auto; margin-bottom:18px;
@@ -277,12 +336,10 @@ tr:last-child td { border-bottom:none; }
 tbody tr { transition:background .1s; }
 tbody tr:hover td { background:var(--subtle); }
 
-/* Empty state */
 .empty { text-align:center; padding:52px 20px; color:var(--text-3); }
 .empty-icon { font-size:36px; margin-bottom:12px; opacity:.4; display:block; }
 .empty-text { font-size:13px; }
 
-/* Line items */
 .line-row {
   background:var(--card2); border:1px solid var(--border);
   border-radius:10px; padding:12px; margin-bottom:10px;
@@ -301,9 +358,7 @@ tbody tr:hover td { background:var(--subtle); }
 }
 .line-hdr span { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:var(--text-3); }
 .line-hdr .lh-total { text-align:right; }
-.line-sub { margin-bottom:10px; }
 
-/* Totals box */
 .totals-box { background:var(--card2); border:1px solid var(--border); border-radius:12px; padding:16px; }
 .total-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; font-size:13px; }
 .total-row.divider { border-top:1px solid var(--border); margin-top:6px; padding-top:10px; }
@@ -311,10 +366,8 @@ tbody tr:hover td { background:var(--subtle); }
 .total-label { color:var(--text-2); }
 .total-val { font-weight:600; font-family:var(--font-mono); }
 
-/* Divider */
 .divider-line { height:1px; background:var(--border); margin:20px 0; }
 
-/* Modals */
 .modal-backdrop {
   position:fixed; inset:0; background:rgba(0,0,0,.65);
   display:none; align-items:center; justify-content:center;
@@ -340,10 +393,8 @@ tbody tr:hover td { background:var(--subtle); }
 .modal-body { padding:22px; overflow-y:auto; flex:1; -webkit-overflow-scrolling:touch; }
 .modal-ftr { padding:16px 22px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px; flex-shrink:0; flex-wrap:wrap; }
 
-/* PDF modal body */
 .modal-pdf-body { background:#525659; padding:20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; align-items:center; gap:24px; }
 
-/* Toasts */
 .toasts { position:fixed; bottom:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
 .toast {
   background:var(--card); border:1px solid var(--border);
@@ -354,8 +405,8 @@ tbody tr:hover td { background:var(--subtle); }
   pointer-events:all;
 }
 .toast.link { border-left-color:var(--accent); }
+.toast.warn { border-left-color:var(--yellow); }
 
-/* Animations */
 @keyframes fIn     { from { opacity:0; } to { opacity:1; } }
 @keyframes slideIn { from { transform:translateX(110%); opacity:0; } to { transform:translateX(0); opacity:1; } }
 @keyframes fadeUp  { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
@@ -364,106 +415,102 @@ tbody tr:hover td { background:var(--subtle); }
 .fu2 { animation:fadeUp .3s .16s ease both; }
 .fu3 { animation:fadeUp .3s .24s ease both; }
 
-/* Chips / Tabs */
 .tabs { display:flex; gap:4px; background:var(--subtle); border-radius:10px; padding:4px; margin-bottom:18px; }
-.tab {
-  flex:1; text-align:center; padding:7px 12px; border-radius:8px;
-  font-size:12.5px; font-weight:600; cursor:pointer; transition:all .2s;
-  color:var(--text-2); border:none; background:transparent;
-}
+.tab { flex:1; text-align:center; padding:7px 12px; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer; transition:all .2s; color:var(--text-2); border:none; background:transparent; }
 .tab.active { background:var(--card); color:var(--text); box-shadow:var(--shadow-sm); }
 
-/* Alert box */
 .alert { padding:12px 16px; border-radius:10px; font-size:13px; margin-bottom:14px; display:flex; align-items:flex-start; gap:8px; }
 .alert-info { background:var(--accent-s); border:1px solid rgba(59,130,246,.2); color:var(--accent-h); }
 .alert-warn { background:var(--yellow-s); border:1px solid rgba(245,158,11,.2); color:var(--yellow); }
 
 /* ═══════════════════════════════════════
    A4 DOCUMENT — Professional Layout
+   ปรับฟอนต์และ layout ให้อ่านง่ายขึ้น
 ═══════════════════════════════════════ */
 .a4-bg { background:#525659; }
 .a4-page {
   width:210mm; min-height:297mm;
-  background:#ffffff; color:#111;
-  padding:16mm 20mm 14mm;
+  background:#ffffff; color:#1e293b;
+  padding:18mm 22mm 16mm;
   font-family:'IBM Plex Sans Thai', 'Sarabun', sans-serif;
+  font-size:12pt;
+  line-height:1.7;
   position:relative; flex-shrink:0;
   box-shadow:0 8px 30px rgba(0,0,0,.35);
   display:flex; flex-direction:column;
   box-sizing:border-box; overflow:hidden;
 }
-/* Corner accent */
 .a4-corner { position:absolute; top:0; right:0; z-index:1; }
 .a4-corner svg { display:block; }
 .a4-page > * { position:relative; z-index:2; }
 
 /* Header */
-.a4-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:22px; gap:20px; }
+.a4-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; gap:24px; }
 .a4-header-l { flex:1; }
-.a4-header-r { min-width:210px; text-align:right; }
+.a4-header-r { min-width:220px; text-align:right; }
 
-.a4-logo { max-height:52px; max-width:160px; object-fit:contain; margin-bottom:12px; display:block; }
-.a4-company { font-size:14px; font-weight:700; color:#0f172a; text-transform:uppercase; margin-bottom:4px; margin-top:10px; letter-spacing:.3px; }
-.a4-address { font-size:10.5px; color:#475569; line-height:1.6; }
+.a4-logo { max-height:56px; max-width:170px; object-fit:contain; margin-bottom:14px; display:block; }
+.a4-company { font-size:13pt; font-weight:700; color:#0f172a; text-transform:uppercase; margin-bottom:5px; margin-top:10px; letter-spacing:.4px; }
+.a4-address { font-size:10pt; color:#475569; line-height:1.75; }
 
-.a4-doc-type { font-size:22px; font-weight:700; margin-bottom:12px; }
+.a4-doc-type { font-size:22pt; font-weight:800; margin-bottom:14px; font-family:'Syne', sans-serif; }
 .a4-meta { width:100%; border-collapse:collapse; }
-.a4-meta td { padding:3px 0; font-size:11px; border:none; }
-.a4-meta td:first-child { color:#64748b; padding-right:12px; text-align:right; white-space:nowrap; }
-.a4-meta td:last-child { color:#0f172a; font-weight:600; text-align:right; white-space:nowrap; font-family:'IBM Plex Mono', monospace; }
+.a4-meta td { padding:3.5px 0; font-size:10.5pt; border:none; }
+.a4-meta td:first-child { color:#64748b; padding-right:14px; text-align:right; white-space:nowrap; }
+.a4-meta td:last-child { color:#0f172a; font-weight:600; text-align:right; white-space:nowrap; font-family:'IBM Plex Mono', monospace; font-size:10pt; }
 
-/* Separator */
-.a4-sep { height:1px; background:linear-gradient(90deg, transparent, #cbd5e1, transparent); margin:16px 0; }
+.a4-sep { height:1.5px; background:linear-gradient(90deg, transparent, #cbd5e1, transparent); margin:18px 0; }
 
-/* Customer */
-.a4-to { margin-bottom:18px; }
-.a4-to-label { font-size:10px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:#94a3b8; margin-bottom:5px; }
-.a4-to-name { font-size:14px; font-weight:700; color:#0f172a; margin-bottom:2px; }
-.a4-to-detail { font-size:10.5px; color:#475569; }
+/* Customer block */
+.a4-to { margin-bottom:20px; background:#f8fafc; border-left:3.5px solid currentColor; border-radius:0 8px 8px 0; padding:12px 16px; }
+.a4-to-label { font-size:9pt; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; color:#94a3b8; margin-bottom:5px; }
+.a4-to-name { font-size:14pt; font-weight:700; color:#0f172a; margin-bottom:3px; line-height:1.3; }
+.a4-to-detail { font-size:10pt; color:#475569; line-height:1.65; }
 
 /* Items table */
-.a4-table { width:100%; border-collapse:collapse; margin-bottom:20px; }
-.a4-table thead tr { border-bottom:2px solid #0f172a; }
-.a4-table th { padding:8px 6px; font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:#475569; text-align:right; }
+.a4-table { width:100%; border-collapse:collapse; margin-bottom:22px; }
+.a4-table thead tr { border-bottom:2.5px solid #0f172a; }
+.a4-table th { padding:9px 8px; font-size:9.5pt; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:#475569; text-align:right; }
 .a4-table th:first-child,.a4-table th:nth-child(2) { text-align:left; }
 .a4-table th:first-child { width:28px; }
 .a4-table tbody tr { border-bottom:1px solid #f1f5f9; }
 .a4-table tbody tr:last-child { border-bottom:none; }
-.a4-table td { padding:9px 6px; font-size:11.5px; color:#0f172a; text-align:right; vertical-align:top; }
+.a4-table td { padding:10px 8px; font-size:11pt; color:#1e293b; text-align:right; vertical-align:top; line-height:1.6; }
 .a4-table td:first-child,.a4-table td:nth-child(2) { text-align:left; }
-.a4-table td:first-child { color:#94a3b8; }
+.a4-table td:first-child { color:#94a3b8; font-size:10pt; }
+.a4-table td:nth-child(2) { font-weight:500; }
 
 /* Totals */
-.a4-totals-grid { display:grid; grid-template-columns:1fr 260px; gap:16px; margin-bottom:18px; }
-.a4-baht-text { font-size:11.5px; color:#475569; font-style:italic; align-self:flex-start; padding-top:4px; line-height:1.5; }
+.a4-totals-grid { display:grid; grid-template-columns:1fr 270px; gap:18px; margin-bottom:20px; }
+.a4-baht-text { font-size:10.5pt; color:#475569; font-style:italic; align-self:flex-start; padding-top:4px; line-height:1.6; background:#f8fafc; border-radius:8px; padding:10px 12px; }
 .a4-total-rows { }
-.a4-trow { display:flex; justify-content:space-between; padding:4px 0; font-size:11.5px; color:#475569; }
-.a4-trow.bold { font-weight:700; color:#0f172a; font-size:12px; }
-.a4-trow.sep { border-top:1.5px solid #0f172a; margin-top:6px; padding-top:8px; }
-.a4-trow.net { font-size:14px; font-weight:700; color:#0f172a; }
-.a4-trow-val { font-family:'IBM Plex Mono', monospace; }
+.a4-trow { display:flex; justify-content:space-between; padding:5px 0; font-size:11pt; color:#475569; }
+.a4-trow.bold { font-weight:700; color:#0f172a; font-size:11.5pt; }
+.a4-trow.sep { border-top:2px solid #0f172a; margin-top:7px; padding-top:9px; }
+.a4-trow.net { font-size:14pt; font-weight:800; color:#0f172a; }
+.a4-trow-val { font-family:'IBM Plex Mono', monospace; font-size:inherit; }
 .a4-trow.red { color:#dc2626; }
 
 /* Signatures */
-.a4-sigs { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-top:auto; padding-top:20px; }
+.a4-sigs { display:grid; grid-template-columns:1fr 1fr; gap:44px; margin-top:auto; padding-top:24px; }
 .a4-sig { text-align:center; }
-.a4-sig-space { height:56px; display:flex; align-items:flex-end; justify-content:center; margin-bottom:8px; }
-.a4-sig-space img { max-height:50px; max-width:140px; object-fit:contain; mix-blend-mode:multiply; }
-.a4-sig-line { border-top:1px solid #94a3b8; padding-top:7px; font-size:10.5px; color:#475569; }
-.a4-sig-name { font-size:11px; font-weight:700; color:#0f172a; margin-bottom:2px; }
-.a4-sig-date { font-size:10px; color:#94a3b8; margin-top:3px; }
+.a4-sig-space { height:60px; display:flex; align-items:flex-end; justify-content:center; margin-bottom:8px; }
+.a4-sig-space img { max-height:54px; max-width:140px; object-fit:contain; mix-blend-mode:multiply; }
+.a4-sig-line { border-top:1px solid #94a3b8; padding-top:8px; font-size:10.5pt; color:#475569; }
+.a4-sig-name { font-size:11.5pt; font-weight:700; color:#0f172a; margin-bottom:2px; }
+.a4-sig-date { font-size:9.5pt; color:#94a3b8; margin-top:3px; }
 
 /* Payment page */
-.a4-payment-section { margin-top:30px; }
-.a4-payment-title { font-size:14px; font-weight:700; color:#0f172a; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
-.a4-bank-card { border:1.5px solid #e2e8f0; border-radius:12px; padding:18px; display:flex; align-items:center; gap:16px; margin-bottom:16px; }
-.a4-bank-logo-circle { width:44px; height:44px; border-radius:50%; background:#f59e0b; display:flex; align-items:center; justify-content:center; color:#fff; font-size:17px; font-weight:700; flex-shrink:0; font-family:'Syne', sans-serif; }
+.a4-payment-section { margin-top:32px; }
+.a4-payment-title { font-size:13.5pt; font-weight:700; color:#0f172a; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.a4-bank-card { border:1.5px solid #e2e8f0; border-radius:14px; padding:20px; display:flex; align-items:center; gap:18px; margin-bottom:16px; }
+.a4-bank-logo-circle { width:46px; height:46px; border-radius:50%; background:#f59e0b; display:flex; align-items:center; justify-content:center; color:#fff; font-size:17px; font-weight:700; flex-shrink:0; font-family:'Syne', sans-serif; }
 .a4-bank-info { flex:1; }
-.a4-bank-name-line { font-size:11.5px; color:#475569; }
-.a4-bank-acc { font-size:17px; font-weight:700; color:#0f172a; font-family:'IBM Plex Mono', monospace; margin-bottom:2px; letter-spacing:1px; }
+.a4-bank-name-line { font-size:11pt; color:#475569; }
+.a4-bank-acc { font-size:18pt; font-weight:700; color:#0f172a; font-family:'IBM Plex Mono', monospace; margin-bottom:3px; letter-spacing:1.5px; }
 .a4-qr-wrap { flex-shrink:0; }
-.a4-qr-img { width:90px; height:90px; object-fit:contain; border:1px solid #e2e8f0; border-radius:8px; padding:4px; display:block; }
-.a4-qr-placeholder { width:90px; height:90px; border:2px dashed #cbd5e1; border-radius:8px; display:flex; align-items:center; justify-content:center; }
+.a4-qr-img { width:94px; height:94px; object-fit:contain; border:1px solid #e2e8f0; border-radius:10px; padding:4px; display:block; }
+.a4-qr-placeholder { width:94px; height:94px; border:2px dashed #cbd5e1; border-radius:10px; display:flex; align-items:center; justify-content:center; }
 
 /* Paid stamp */
 .a4-stamp {
@@ -476,7 +523,7 @@ tbody tr:hover td { background:var(--subtle); }
 }
 
 /* A4 footer */
-.a4-footer { border-top:1px solid #f1f5f9; padding-top:10px; margin-top:20px; text-align:right; font-size:9.5px; color:#94a3b8; }
+.a4-footer { border-top:1px solid #f1f5f9; padding-top:10px; margin-top:20px; text-align:right; font-size:9pt; color:#94a3b8; }
 .a4-footer strong { font-weight:700; }
 
 /* ═══════════════════════════════════════
@@ -548,7 +595,14 @@ tbody tr:hover td { background:var(--subtle); }
   .pub-toolbar { flex-direction:column; text-align:center; }
   .pub-page { padding:12px; }
 }
+
+/* Loading spinner for share */
+.share-loading { display:flex; align-items:center; justify-content:center; min-height:100vh; background:#474a4e; }
+.share-loading-inner { color:#f1f5f9; font-family:'IBM Plex Sans Thai',sans-serif; font-size:16px; text-align:center; }
+.share-loading-spinner { width:40px; height:40px; border:3px solid rgba(255,255,255,.2); border-top-color:#3b82f6; border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 16px; }
+@keyframes spin { to { transform:rotate(360deg); } }
 </style>
+
 </head>
 <body>
 
@@ -556,6 +610,7 @@ tbody tr:hover td { background:var(--subtle); }
   <div id="overlay" onclick="closeSidebar()"></div>
 
   <!-- ══ SIDEBAR ══ -->
+
   <nav class="sidebar" id="sidebar">
     <div class="sb-logo">
       <div>
@@ -565,22 +620,26 @@ tbody tr:hover td { background:var(--subtle); }
       <button class="sb-close" onclick="closeSidebar()">✕</button>
     </div>
 
-    <div class="nav" id="nav-list"></div>
+```
+<div class="nav" id="nav-list"></div>
 
-    <div class="sb-user">
-      <div class="sb-avatar" id="sb-avatar">
-        <span class="sb-avatar-letter" id="sb-avatar-letter">B</span>
-        <img id="sb-avatar-img" src="" alt="">
-      </div>
-      <div class="sb-user-info">
-        <div class="sb-user-name" id="sb-user-name">บริษัทของคุณ</div>
-        <div class="sb-user-role">Administrator</div>
-      </div>
-      <button class="theme-btn" onclick="toggleTheme()" id="theme-icon">🌙</button>
-    </div>
+<div class="sb-user">
+  <div class="sb-avatar" id="sb-avatar">
+    <span class="sb-avatar-letter" id="sb-avatar-letter">B</span>
+    <img id="sb-avatar-img" src="" alt="">
+  </div>
+  <div class="sb-user-info">
+    <div class="sb-user-name" id="sb-user-name">บริษัทของคุณ</div>
+    <div class="sb-user-role">Administrator</div>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()" id="theme-icon">🌙</button>
+</div>
+```
+
   </nav>
 
   <!-- ══ MAIN ══ -->
+
   <div class="main">
     <div class="topbar">
       <button class="menu-btn" onclick="openSidebar()">☰</button>
@@ -595,14 +654,17 @@ tbody tr:hover td { background:var(--subtle); }
 </div>
 
 <!-- ══ MODAL ══ -->
+
 <div class="modal-backdrop" id="modal">
   <div class="modal-box" id="modal-box"></div>
 </div>
 
 <!-- ══ TOASTS ══ -->
+
 <div class="toasts" id="toasts"></div>
 
 <!-- ══ PRINT AREA ══ -->
+
 <div id="print-area"></div>
 
 <script>
@@ -667,10 +729,10 @@ const DEFAULT_DB = {
     { id:'P002', name:'ค่าบริการดูแลรักษาระบบ (รายเดือน)', price:5000 },
   ],
   documents:[
-    { id:'QT202405001', type:'QT', customerId:'C001', date:'01/05/2024', due:'15/05/2024',
+    { id:'QT202405001', type:'QT', customerId:'C001', customerName:'บริษัท เทค อินโนเวชั่น จำกัด', date:'01/05/2024', due:'15/05/2024',
       items:[{productId:'P001',name:'ค่าบริการออกแบบและพัฒนาระบบ',qty:1,price:25000,discount:0}],
       subtotal:25000, vatRate:0, vat:0, whtRate:0, wht:0, total:25000, status:'sent' },
-    { id:'INV202405001', type:'INV', customerId:'C001', date:'11/05/2024', due:'18/05/2024',
+    { id:'INV202405001', type:'INV', customerId:'C001', customerName:'บริษัท เทค อินโนเวชั่น จำกัด', date:'11/05/2024', due:'18/05/2024',
       items:[{productId:'P001',name:'ค่าบริการออกแบบและพัฒนาระบบ',qty:1,price:25000,discount:0}],
       subtotal:25000, vatRate:7, vat:1750, whtRate:3, wht:750, total:26750, status:'unpaid' },
   ]
@@ -678,16 +740,22 @@ const DEFAULT_DB = {
 
 let DB = (() => {
   try {
-    const raw = localStorage.getItem('bizflow_v12');
+    const raw = localStorage.getItem('bizflow_v13');
     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_DB));
     const parsed = JSON.parse(raw);
-    // merge missing keys
     if (!parsed.settings.issuerName) parsed.settings.issuerName = DEFAULT_DB.settings.issuerName;
     if (!parsed.settings.qrCode) parsed.settings.qrCode = '';
+    // migrate: ensure customerName in docs
+    parsed.documents.forEach(d => {
+      if (!d.customerName) {
+        const c = parsed.customers.find(x => x.id === d.customerId);
+        d.customerName = c ? c.name : d.customerId;
+      }
+    });
     return parsed;
   } catch { return JSON.parse(JSON.stringify(DEFAULT_DB)); }
 })();
-const saveDB = () => localStorage.setItem('bizflow_v12', JSON.stringify(DB));
+const saveDB = () => localStorage.setItem('bizflow_v13', JSON.stringify(DB));
 
 /* ═══════════════════════════════════════
    THEME
@@ -707,7 +775,16 @@ applyTheme();
 const money = n => Number(n).toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2});
 const genId = prefix => { const d = new Date(); return prefix + d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(Math.floor(Math.random()*1000)).padStart(3,'0'); };
 const todayStr = () => { const d = new Date(); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; };
-const getCus = id => DB.customers.find(c => c.id === id) || { name:'ไม่ระบุลูกค้า', phone:'-', taxId:'-' };
+const getCus = (doc) => {
+  // Support both old (customerId) and new (customerName freetext) style
+  if (doc && doc.customerName) {
+    const fromDB = DB.customers.find(c => c.id === doc.customerId);
+    return fromDB || { name: doc.customerName, phone: doc.customerPhone||'-', taxId: doc.customerTaxId||'-', email:'' };
+  }
+  if (doc && doc.customerId) return DB.customers.find(c => c.id === doc.customerId) || { name:'ไม่ระบุลูกค้า', phone:'-', taxId:'-' };
+  if (typeof doc === 'string') return DB.customers.find(c => c.id === doc) || { name:'ไม่ระบุลูกค้า', phone:'-', taxId:'-' };
+  return { name:'ไม่ระบุลูกค้า', phone:'-', taxId:'-' };
+};
 
 function statusBadge(s, type) {
   const map = {
@@ -722,13 +799,14 @@ function statusBadge(s, type) {
 }
 
 /* Toast */
-function toast(msg, isLink = false) {
+function toast(msg, type = '') {
   const box = document.getElementById('toasts');
   const el = document.createElement('div');
-  el.className = 'toast' + (isLink ? ' link' : '');
-  el.innerHTML = `<span>${isLink ? '🔗' : '✅'}</span><span>${msg}</span>`;
+  el.className = 'toast' + (type ? ' ' + type : '');
+  const icon = type === 'link' ? '🔗' : type === 'warn' ? '⚠️' : '✅';
+  el.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
   box.appendChild(el);
-  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 3500);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 4000);
 }
 
 /* Modal */
@@ -781,7 +859,6 @@ function setPage(id, extra) {
   currentPage = id;
   if (id === 'doc-create') draftType = extra || 'INV';
   renderNav();
-  const titleKey = id === 'doc-create' ? 'doc-create' : id;
   document.getElementById('topbar-title').textContent = id === 'doc-create'
     ? `สร้าง${DOC_META[draftType].title}`
     : (PAGE_TITLES[id] || 'BizFlow');
@@ -815,7 +892,6 @@ function renderNav() {
     </div>`;
   }).join('');
 
-  // Avatar / company name
   const s = DB.settings;
   document.getElementById('sb-user-name').textContent = s.companyName || 'บริษัทของคุณ';
   const letter = document.getElementById('sb-avatar-letter');
@@ -833,7 +909,7 @@ function renderDashboard() {
   const pending = invs.filter(d => d.status === 'unpaid' || d.status === 'overdue').reduce((s,d) => s + d.total, 0);
 
   const recentRows = [...DB.documents].reverse().slice(0, 7).map(doc => {
-    const cus = getCus(doc.customerId);
+    const cus = getCus(doc);
     const m = DOC_META[doc.type];
     return `<tr onclick="previewDoc('${doc.id}')" style="cursor:pointer">
       <td>
@@ -952,11 +1028,17 @@ function saveCustomer(inline) {
   if (!name) return alert('กรุณากรอกชื่อลูกค้า');
   const c = { id:genId('C'), name, taxId:document.getElementById('c-tax').value, phone:document.getElementById('c-phone').value, email:document.getElementById('c-email').value };
   DB.customers.push(c); saveDB(); closeModal(); toast('เพิ่มลูกค้าแล้ว');
-  if (inline && document.getElementById('form-cus')) {
-    const sel = document.getElementById('form-cus');
-    sel.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-    sel.value = c.id; draft.customerId = c.id;
-  } else { setPage('customers'); }
+  if (inline) {
+    // update combo
+    draft.customerId = c.id;
+    draft.customerName = c.name;
+    draft.customerPhone = c.phone;
+    draft.customerTaxId = c.taxId;
+    const inp = document.getElementById('cus-combo-inp');
+    if (inp) inp.value = c.name;
+  } else {
+    setPage('customers');
+  }
 }
 
 function delCustomer(id) {
@@ -1023,7 +1105,7 @@ function renderDocList(type) {
   const m = DOC_META[type];
   const docs = [...DB.documents.filter(d => d.type === type)].reverse();
   const rows = docs.map(doc => {
-    const cus = getCus(doc.customerId);
+    const cus = getCus(doc);
     return `<tr>
       <td style="font-family:var(--font-mono);font-size:12.5px;color:${m.hex};cursor:pointer;font-weight:600" onclick="previewDoc('${doc.id}')">${doc.id}</td>
       <td><div style="font-weight:600">${cus.name}</div></td>
@@ -1057,7 +1139,7 @@ function renderDocList(type) {
 function renderPayments() {
   const pending = DB.documents.filter(d => d.type === 'INV' && (d.status === 'unpaid' || d.status === 'overdue'));
   const rows = pending.map(inv => {
-    const cus = getCus(inv.customerId);
+    const cus = getCus(inv);
     return `<tr>
       <td style="font-family:var(--font-mono);font-size:12.5px;color:var(--accent-h);font-weight:600">${inv.id}</td>
       <td style="font-weight:600">${cus.name}</td>
@@ -1081,7 +1163,7 @@ function renderPayments() {
 
 function processPayment(invId) {
   const inv = DB.documents.find(d => d.id === invId); if (!inv) return;
-  const cus = getCus(inv.customerId);
+  const cus = getCus(inv);
   if (!confirm(`ยืนยันรับชำระเงิน ฿${money(inv.total)} จาก\n${cus.name}?`)) return;
   inv.status = 'paid';
   const re = { ...JSON.parse(JSON.stringify(inv)), id:genId('RE'), type:'RE', status:'paid', date:todayStr() };
@@ -1091,18 +1173,76 @@ function processPayment(invId) {
 }
 
 /* ═══════════════════════════════════════
-   DOCUMENT CREATE
+   DOCUMENT CREATE — Customer Combobox
 ═══════════════════════════════════════ */
 let draft = {};
 
 function initDraft(type) {
   const t = todayStr();
-  draft = { type, customerId:'', date:t, due:t, items:[{ productId:'', name:'', qty:1, price:0, discount:0 }], vatRate:0, whtRate:0, subtotal:0, vat:0, wht:0, total:0 };
+  draft = { type, customerId:'', customerName:'', customerPhone:'', customerTaxId:'',
+    date:t, due:t, items:[{ productId:'', name:'', qty:1, price:0, discount:0 }],
+    vatRate:0, whtRate:0, subtotal:0, vat:0, wht:0, total:0 };
+}
+
+/* Customer combobox: allows typing or picking from list */
+function renderCusCombo() {
+  const cusOpts = DB.customers.map(c =>
+    `<div class="cus-opt" onclick="pickCus('${c.id}','${c.name.replace(/'/g,"\\'")}','${(c.phone||'').replace(/'/g,"\\'")}','${(c.taxId||'').replace(/'/g,"\\'")}')">
+      ${c.name}${c.phone ? `<span style="color:var(--text-3);font-size:11.5px;margin-left:8px">${c.phone}</span>` : ''}
+    </div>`).join('');
+  return `
+    <div class="cus-combo">
+      <input id="cus-combo-inp" class="cus-combo-input" placeholder="พิมพ์ชื่อลูกค้า หรือเลือกจากรายการ..."
+        autocomplete="off"
+        value="${draft.customerName}"
+        oninput="onCusInput(this.value)"
+        onfocus="openCusDrop()"
+        onblur="setTimeout(closeCusDrop,200)">
+      <div class="cus-dropdown" id="cus-drop">
+        ${cusOpts}
+        <div class="cus-opt cus-opt-new" onclick="openAddCustomer(true)">➕ เพิ่มลูกค้าใหม่</div>
+      </div>
+    </div>`;
+}
+
+function openCusDrop() {
+  const drop = document.getElementById('cus-drop');
+  if (drop) drop.classList.add('open');
+}
+function closeCusDrop() {
+  const drop = document.getElementById('cus-drop');
+  if (drop) drop.classList.remove('open');
+  // save typed name if no match selected
+  const inp = document.getElementById('cus-combo-inp');
+  if (inp && !draft.customerId) {
+    draft.customerName = inp.value.trim();
+  }
+}
+function onCusInput(val) {
+  draft.customerName = val;
+  draft.customerId = '';
+  // filter dropdown
+  const drop = document.getElementById('cus-drop');
+  if (!drop) return;
+  drop.classList.add('open');
+  const opts = drop.querySelectorAll('.cus-opt:not(.cus-opt-new)');
+  const q = val.toLowerCase();
+  opts.forEach(opt => {
+    opt.style.display = opt.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+function pickCus(id, name, phone, taxId) {
+  draft.customerId = id;
+  draft.customerName = name;
+  draft.customerPhone = phone;
+  draft.customerTaxId = taxId;
+  const inp = document.getElementById('cus-combo-inp');
+  if (inp) inp.value = name;
+  closeCusDrop();
 }
 
 function renderCreateUI() {
   const m = DOC_META[draft.type];
-  const cusOpts = DB.customers.map(c => `<option value="${c.id}" ${draft.customerId===c.id?'selected':''}>${c.name}</option>`).join('');
 
   document.getElementById('content').innerHTML = `
   <div class="card fu" style="border-top:3px solid ${m.hex}">
@@ -1117,12 +1257,15 @@ function renderCreateUI() {
     <!-- Customer + Date -->
     <div class="g2" style="margin-bottom:0">
       <div class="form-group">
-        <label class="form-label">ลูกค้า *</label>
-        <div style="display:flex;gap:8px;">
-          <select id="form-cus" class="form-control" style="flex:1" onchange="draft.customerId=this.value">
-            <option value="">— เลือกลูกค้า —</option>${cusOpts}
-          </select>
-          <button class="btn btn-ghost" onclick="openAddCustomer(true)" title="เพิ่มลูกค้าใหม่">＋</button>
+        <label class="form-label">ลูกค้า * <span style="font-weight:400;color:var(--text-3)">(พิมพ์ชื่อหรือเลือกจากรายการ)</span></label>
+        <div style="display:flex;gap:8px;align-items:flex-start;">
+          <div style="flex:1">${renderCusCombo()}</div>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+          <input type="text" id="cus-phone" class="form-control" style="flex:1;min-width:140px" placeholder="เบอร์โทรศัพท์" value="${draft.customerPhone}"
+            oninput="draft.customerPhone=this.value">
+          <input type="text" id="cus-taxid" class="form-control" style="flex:1;min-width:140px" placeholder="เลขผู้เสียภาษี" value="${draft.customerTaxId}"
+            oninput="draft.customerTaxId=this.value">
         </div>
       </div>
       <div class="g2" style="margin-bottom:0">
@@ -1195,10 +1338,10 @@ function renderItems() {
     <div class="line-row">
       <div class="ln-desc">
         <select class="form-control" style="margin-bottom:6px" onchange="pickProduct(${i},this.value)">
-          <option value="">— เลือกจากรายการ —</option>
+          <option value="">— เลือกจากรายการสินค้า —</option>
           ${DB.products.map(p=>`<option value="${p.id}" ${it.productId===p.id?'selected':''}>${p.name}</option>`).join('')}
         </select>
-        <input type="text" class="form-control" placeholder="รายละเอียดสินค้า / บริการ" value="${it.name}" oninput="draft.items[${i}].name=this.value">
+        <input type="text" class="form-control" placeholder="หรือพิมพ์รายละเอียดสินค้า / บริการ" value="${it.name}" oninput="draft.items[${i}].name=this.value">
       </div>
       <div class="ln-qty">
         <label class="form-label" style="font-size:10.5px">จำนวน</label>
@@ -1246,7 +1389,9 @@ function calcTotals() {
 }
 
 function previewDraft() {
-  if (!draft.customerId) return alert('กรุณาเลือกลูกค้าก่อน');
+  const name = (document.getElementById('cus-combo-inp')||{}).value || draft.customerName;
+  if (!name) return alert('กรุณาระบุชื่อลูกค้าก่อน');
+  draft.customerName = name;
   const items = draft.items.filter(i => i.name && i.price > 0);
   if (!items.length) return alert('กรุณาเพิ่มรายการสินค้าอย่างน้อย 1 รายการ');
   const tmp = {...JSON.parse(JSON.stringify(draft)), id:'PREVIEW', items, isDraft:true};
@@ -1254,7 +1399,11 @@ function previewDraft() {
 }
 
 function saveDraft() {
-  if (!draft.customerId) return alert('กรุณาเลือกลูกค้า');
+  const name = (document.getElementById('cus-combo-inp')||{}).value || draft.customerName;
+  if (!name) return alert('กรุณาระบุชื่อลูกค้า');
+  draft.customerName = name;
+  draft.customerPhone = (document.getElementById('cus-phone')||{}).value || draft.customerPhone;
+  draft.customerTaxId = (document.getElementById('cus-taxid')||{}).value || draft.customerTaxId;
   const items = draft.items.filter(i => i.name && i.price > 0);
   if (!items.length) return alert('กรุณาเพิ่มรายการอย่างน้อย 1 รายการ');
   const statusMap = { QT:'sent', INV:'unpaid', BL:'sent', RE:'paid' };
@@ -1281,16 +1430,16 @@ function cornerSVG(hex) {
 }
 
 function genA4HTML(doc, customCus, customComp) {
-  const m   = DOC_META[doc.type];
-  const cus  = customCus  || getCus(doc.customerId);
+  const m    = DOC_META[doc.type];
+  const cus  = customCus  || getCus(doc);
   const comp = customComp || DB.settings;
 
   const logoHtml = comp.logo
     ? `<img src="${comp.logo}" class="a4-logo">`
     : `<div style="height:12px"></div>`;
   const sigHtml = comp.signature
-    ? `<img src="${comp.signature}" style="max-height:46px;max-width:130px;object-fit:contain;mix-blend-mode:multiply;">`
-    : `<div style="height:46px"></div>`;
+    ? `<img src="${comp.signature}" style="max-height:50px;max-width:140px;object-fit:contain;mix-blend-mode:multiply;">`
+    : `<div style="height:50px"></div>`;
   const qrHtml = comp.qrCode
     ? `<img src="${comp.qrCode}" class="a4-qr-img">`
     : `<div class="a4-qr-placeholder"><svg viewBox="0 0 24 24" width="50" height="50"><path fill="#94a3b8" d="M3 3h8v8H3zm2 2v4h4V5zm8-2h8v8h-8zm2 2v4h4V5zM3 13h8v8H3zm2 2v4h4v-4zm13 2h2v2h-2zm-3-4h2v2h-2zm2 2h2v2h-2zm-2 2h2v2h-2zm3 2h2v2h-2zm2-6h2v2h-2zm-2 2h2v2h-2z"/></svg></div>`;
@@ -1333,10 +1482,14 @@ function genA4HTML(doc, customCus, customComp) {
 
     <div class="a4-sep"></div>
 
-    <div class="a4-to">
+    <div class="a4-to" style="border-left-color:${m.hex}">
       <div class="a4-to-label" style="color:${m.hex}">ลูกค้า / Customer</div>
       <div class="a4-to-name">${cus.name}</div>
-      <div class="a4-to-detail">โทร ${cus.phone||'-'} &nbsp;|&nbsp; เลขผู้เสียภาษี ${cus.taxId||'-'}</div>
+      <div class="a4-to-detail">
+        ${cus.phone && cus.phone !== '-' ? `โทร ${cus.phone}` : ''}
+        ${cus.phone && cus.phone !== '-' && cus.taxId && cus.taxId !== '-' ? ' &nbsp;|&nbsp; ' : ''}
+        ${cus.taxId && cus.taxId !== '-' ? `เลขผู้เสียภาษี ${cus.taxId}` : ''}
+      </div>
     </div>
 
     <table class="a4-table">
@@ -1360,7 +1513,7 @@ function genA4HTML(doc, customCus, customComp) {
         <div class="a4-trow"><span>ภาษีมูลค่าเพิ่ม (${doc.vatRate}%)</span><span class="a4-trow-val">${money(doc.vat)}</span></div>
         <div class="a4-trow bold sep" style="color:${m.hex}"><span>รวมทั้งสิ้น</span><span class="a4-trow-val">${money(doc.subtotal+doc.vat)}</span></div>
         <div class="a4-trow red"><span>หัก ณ ที่จ่าย (${doc.whtRate}%)</span><span class="a4-trow-val">- ${money(doc.wht)}</span></div>
-        <div class="a4-trow net"><span>ยอดชำระสุทธิ</span><span class="a4-trow-val" style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:${m.hex}">${money(doc.total)}</span></div>
+        <div class="a4-trow net"><span>ยอดชำระสุทธิ</span><span class="a4-trow-val" style="font-family:'IBM Plex Mono',monospace;font-size:14pt;color:${m.hex}">${money(doc.total)}</span></div>
       </div>
     </div>
 
@@ -1396,25 +1549,23 @@ function genA4HTML(doc, customCus, customComp) {
       <div class="a4-header-r"><div class="a4-doc-type" style="color:#3b82f6">ข้อมูลการชำระเงิน</div></div>
     </div>
     <div class="a4-sep"></div>
-    <div style="font-size:12px;color:#475569;margin-bottom:20px">
-      <div style="font-weight:700;color:#0f172a;font-size:13px;margin-bottom:2px">${comp.companyName}</div>
+    <div style="font-size:11pt;color:#475569;margin-bottom:22px">
+      <div style="font-weight:700;color:#0f172a;font-size:12.5pt;margin-bottom:2px">${comp.companyName}</div>
       เลขผู้เสียภาษี ${comp.taxId}
     </div>
 
     <div class="a4-payment-section">
-      <div class="a4-payment-title">
-        🏦 โอนเงินผ่านธนาคาร
-      </div>
+      <div class="a4-payment-title">🏦 โอนเงินผ่านธนาคาร</div>
       <div class="a4-bank-card">
         <div class="a4-bank-logo-circle">B</div>
         <div class="a4-bank-info">
           <div class="a4-bank-acc">${comp.bankAcc}</div>
           <div class="a4-bank-name-line">${comp.bankName} — ${comp.bankBranch}</div>
-          <div class="a4-bank-name-line" style="margin-top:2px">ชื่อบัญชี: <strong style="color:#0f172a">${comp.bankOwner}</strong></div>
+          <div class="a4-bank-name-line" style="margin-top:3px">ชื่อบัญชี: <strong style="color:#0f172a">${comp.bankOwner}</strong></div>
         </div>
         <div class="a4-qr-wrap">${qrHtml}</div>
       </div>
-      <div style="font-size:11px;color:#94a3b8;margin-top:10px">* กรุณาโอนเงินภายในวันที่ ${doc.due} และแจ้งยืนยันการชำระผ่าน LINE</div>
+      <div style="font-size:10pt;color:#94a3b8;margin-top:10px">* กรุณาโอนเงินภายในวันที่ ${doc.due} และแจ้งยืนยันการชำระผ่าน LINE</div>
     </div>
 
     <div style="flex-grow:1"></div>
@@ -1442,7 +1593,7 @@ function openDocPreview(doc) {
     <div class="modal-ftr">
       <button class="btn btn-ghost" onclick="closeModal()">ปิด</button>
       ${!doc.isDraft
-        ? `<button class="btn btn-ghost" style="color:var(--accent-h);border-color:var(--accent)" onclick="copyLink('${doc.id}')">🔗 ลิงก์ส่งลูกค้า</button>
+        ? `<button class="btn btn-ghost" style="color:var(--accent-h);border-color:var(--accent)" onclick="shareDoc('${doc.id}')">🔗 ลิงก์ส่งลูกค้า</button>
            <button class="btn btn-primary" onclick="printDoc('${doc.id}')">🖨️ พิมพ์ / PDF</button>`
         : `<button class="btn" style="background:${m.hex};color:#fff" onclick="closeModal();saveDraft()">💾 บันทึก</button>`}
     </div>`, true);
@@ -1454,15 +1605,49 @@ function printDoc(id) {
   setTimeout(() => window.print(), 200);
 }
 
-function copyLink(id) {
+/* ═══════════════════════════════════════
+   SHARE LINK — ใช้ Firestore แทน base64 URL
+   แก้ปัญหาลิงก์ยาวเกินและเปิดไม่ได้
+═══════════════════════════════════════ */
+async function shareDoc(id) {
   const doc = DB.documents.find(d => d.id === id);
-  const cus = getCus(doc.customerId);
-  const comp = {...DB.settings, logo:'', signature:'', qrCode:''};
-  const payload = utoa(JSON.stringify({doc, cus, comp}));
-  const url = `${location.origin}${location.pathname}?pub=${payload}`;
-  const inp = document.createElement('input'); inp.value = url;
-  document.body.appendChild(inp); inp.select(); document.execCommand('copy'); inp.remove();
-  toast('คัดลอกลิงก์แล้ว — ส่งให้ลูกค้าเปิดดูและพิมพ์ได้ทันที', true);
+  if (!doc) return;
+
+  // ตรวจว่า Firebase พร้อมใช้
+  if (!window._fbReady) {
+    toast('Firebase ยังไม่พร้อม กรุณารอสักครู่', 'warn');
+    return;
+  }
+
+  const cus  = getCus(doc);
+  const comp = { ...DB.settings };
+  // ไม่ส่ง logo/signature/qr ขนาดใหญ่ใน URL — ดึงจาก comp ที่ viewer
+  // แต่เก็บใน Firestore ได้เลยเพราะ Firestore รองรับ large strings
+  const payload = { doc, cus, comp, createdAt: Date.now() };
+
+  // ใช้ doc.id เป็น share key เพื่อให้ overwrite ได้
+  const shareId = id.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  try {
+    await window._fbSetDoc(window._fbDoc(window._fbDb, 'shared_docs', shareId), payload);
+    const url = `${location.origin}${location.pathname}?share=${shareId}`;
+    await navigator.clipboard.writeText(url).catch(() => {
+      // fallback
+      const inp = document.createElement('input'); inp.value = url;
+      document.body.appendChild(inp); inp.select(); document.execCommand('copy'); inp.remove();
+    });
+    toast('คัดลอกลิงก์แล้ว — ส่งให้ลูกค้าเปิดดูและพิมพ์ได้ทันที', 'link');
+  } catch(e) {
+    // Fallback: copy base64 URL (กรณี offline)
+    const stripped = { ...comp, logo:'', signature:'', qrCode:'' };
+    const payload2 = utoa(JSON.stringify({ doc, cus, comp: stripped }));
+    const url = `${location.origin}${location.pathname}?pub=${payload2}`;
+    await navigator.clipboard.writeText(url).catch(() => {
+      const inp = document.createElement('input'); inp.value = url;
+      document.body.appendChild(inp); inp.select(); document.execCommand('copy'); inp.remove();
+    });
+    toast('คัดลอกลิงก์แล้ว (offline mode — ไม่มีโลโก้)', 'link');
+  }
 }
 
 /* ═══════════════════════════════════════
@@ -1477,7 +1662,7 @@ function renderReports() {
     <tr>
       <td>${DOC_META[d.type].title}</td>
       <td style="font-family:var(--font-mono);font-size:12px">${d.id}</td>
-      <td>${getCus(d.customerId).name}</td>
+      <td>${getCus(d).name}</td>
       <td>${d.date}</td>
       <td style="font-family:var(--font-mono);font-weight:600">฿${money(d.total)}</td>
       <td>${statusBadge(d.status,d.type)}</td>
@@ -1557,82 +1742,115 @@ function renderSettings() {
       <div class="form-group"><label class="form-label">ชื่อบริษัท / ร้านค้า</label><input id="s-name" class="form-control" value="${s.companyName}"></div>
       <div class="form-group"><label class="form-label">เลขผู้เสียภาษี</label><input id="s-tax" class="form-control" value="${s.taxId}"></div>
       <div class="form-group"><label class="form-label">ที่อยู่</label><textarea id="s-addr" class="form-control" rows="3">${s.address}</textarea></div>
-      <div class="form-group"><label class="form-label">ชื่อผู้ออกเอกสาร (ปรากฏบนหัวกระดาษ)</label><input id="s-issuer" class="form-control" value="${s.issuerName}"></div>
+
+```
+  <div class="form-group"><label class="form-label">ชื่อผู้ออกเอกสาร (ปรากฏบนหัวกระดาษ)</label><input id="s-issuer" class="form-control" value="${s.issuerName}"></div>
+</div>
+<div>
+  <div class="card">
+    <span class="sec-title">🏦 ข้อมูลธนาคาร & QR Code</span>
+    <div class="form-group">
+      <label class="form-label">QR Code รับเงิน</label>
+      ${s.qrCode ? `<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px;width:100px;margin-bottom:8px"><img id="qr-prev" src="${s.qrCode}" style="width:100%;height:90px;object-fit:contain"></div>` : `<div id="qr-prev-wrap"></div>`}
+      <input type="file" accept="image/*" class="form-control" style="padding:8px;font-size:11.5px" onchange="uploadImg(this,'qr','qr-prev')">
     </div>
-    <div>
-      <div class="card">
-        <span class="sec-title">🏦 ข้อมูลธนาคาร & QR Code</span>
-        <div class="form-group">
-          <label class="form-label">QR Code รับเงิน</label>
-          ${s.qrCode ? `<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px;width:100px;margin-bottom:8px"><img id="qr-prev" src="${s.qrCode}" style="width:100%;height:90px;object-fit:contain"></div>` : `<div id="qr-prev-wrap"></div>`}
-          <input type="file" accept="image/*" class="form-control" style="padding:8px;font-size:11.5px" onchange="uploadImg(this,'qr','qr-prev')">
-        </div>
-        <div class="g2" style="margin-bottom:0">
-          <div class="form-group"><label class="form-label">ชื่อธนาคาร</label><input id="s-bname" class="form-control" value="${s.bankName}"></div>
-          <div class="form-group"><label class="form-label">เลขบัญชี</label><input id="s-bacc" class="form-control" value="${s.bankAcc}"></div>
-          <div class="form-group"><label class="form-label">สาขา</label><input id="s-bbranch" class="form-control" value="${s.bankBranch}"></div>
-          <div class="form-group"><label class="form-label">ชื่อบัญชี</label><input id="s-bowner" class="form-control" value="${s.bankOwner}"></div>
-        </div>
-      </div>
-      <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center" onclick="saveSettings()">💾 บันทึกการตั้งค่า</button>
+    <div class="g2" style="margin-bottom:0">
+      <div class="form-group"><label class="form-label">ชื่อธนาคาร</label><input id="s-bname" class="form-control" value="${s.bankName}"></div>
+      <div class="form-group"><label class="form-label">เลขบัญชี</label><input id="s-bacc" class="form-control" value="${s.bankAcc}"></div>
+      <div class="form-group"><label class="form-label">สาขา</label><input id="s-bbranch" class="form-control" value="${s.bankBranch}"></div>
+      <div class="form-group"><label class="form-label">ชื่อบัญชี</label><input id="s-bowner" class="form-control" value="${s.bankOwner}"></div>
     </div>
+  </div>
+  <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center" onclick="saveSettings()">💾 บันทึกการตั้งค่า</button>
+</div>
+```
+
   </div>`;
 }
 
 function uploadImg(input, key, imgId) {
-  if (!input.files || !input.files[0]) return;
-  const r = new FileReader();
-  r.onload = e => {
-    DB.settings[key === 'logo' ? 'logo' : key === 'sig' ? 'signature' : 'qrCode'] = e.target.result;
-    let el = document.getElementById(imgId);
-    if (!el) {
-      const wrap = document.getElementById(imgId + '-wrap');
-      if (wrap) {
-        wrap.innerHTML = `<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px;margin-bottom:8px"><img id="${imgId}" src="${e.target.result}" style="width:100%;height:56px;object-fit:contain"></div>`;
-      }
-    } else { el.src = e.target.result; }
-  };
-  r.readAsDataURL(input.files[0]);
+if (!input.files || !input.files[0]) return;
+const r = new FileReader();
+r.onload = e => {
+DB.settings[key === ‘logo’ ? ‘logo’ : key === ‘sig’ ? ‘signature’ : ‘qrCode’] = e.target.result;
+let el = document.getElementById(imgId);
+if (!el) {
+const wrap = document.getElementById(imgId + ‘-wrap’);
+if (wrap) {
+wrap.innerHTML = `<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px;margin-bottom:8px"><img id="${imgId}" src="${e.target.result}" style="width:100%;height:56px;object-fit:contain"></div>`;
+}
+} else { el.src = e.target.result; }
+};
+r.readAsDataURL(input.files[0]);
 }
 
 function saveSettings() {
-  const s = DB.settings;
-  s.companyName = document.getElementById('s-name').value;
-  s.taxId       = document.getElementById('s-tax').value;
-  s.address     = document.getElementById('s-addr').value;
-  s.issuerName  = document.getElementById('s-issuer').value;
-  s.bankName    = document.getElementById('s-bname').value;
-  s.bankAcc     = document.getElementById('s-bacc').value;
-  s.bankBranch  = document.getElementById('s-bbranch').value;
-  s.bankOwner   = document.getElementById('s-bowner').value;
-  saveDB(); toast('บันทึกการตั้งค่าแล้ว'); renderNav();
+const s = DB.settings;
+s.companyName = document.getElementById(‘s-name’).value;
+s.taxId       = document.getElementById(‘s-tax’).value;
+s.address     = document.getElementById(‘s-addr’).value;
+s.issuerName  = document.getElementById(‘s-issuer’).value;
+s.bankName    = document.getElementById(‘s-bname’).value;
+s.bankAcc     = document.getElementById(‘s-bacc’).value;
+s.bankBranch  = document.getElementById(‘s-bbranch’).value;
+s.bankOwner   = document.getElementById(‘s-bowner’).value;
+saveDB(); toast(‘บันทึกการตั้งค่าแล้ว’); renderNav();
 }
 
 /* ═══════════════════════════════════════
-   PUBLIC VIEWER MODE
+PUBLIC VIEWER MODE — รองรับทั้ง ?share= และ ?pub=
 ═══════════════════════════════════════ */
-const _pub = new URLSearchParams(location.search).get('pub');
-if (_pub) {
-  try {
-    const { doc, cus, comp } = JSON.parse(atou(_pub));
-    document.body.classList.add('light');
-    document.body.style.overflow = 'auto';
-    document.getElementById('app-root').style.display = 'none';
-    document.body.insertAdjacentHTML('beforeend', `
-      <div class="pub-page">
-        <div class="pub-toolbar">
-          <div class="pub-from">เอกสารจาก: <strong>${comp.companyName}</strong></div>
-          <button class="pub-print" onclick="window.print()">🖨️ พิมพ์ / บันทึก PDF</button>
-        </div>
-        <div class="a4-wrapper">${genA4HTML(doc, cus, comp)}</div>
-      </div>`);
-  } catch {
-    document.body.innerHTML = `<div style="padding:60px;text-align:center;font-family:sans-serif;color:#666"><h2>⚠️ ลิงก์ไม่ถูกต้อง</h2><p>กรุณาติดต่อผู้ส่งเอกสารเพื่อขอลิงก์ใหม่</p></div>`;
-  }
+function initPublicViewer(data) {
+if (!data) {
+document.body.innerHTML = `<div style="padding:60px;text-align:center;font-family:'IBM Plex Sans Thai',sans-serif;color:#666"><h2>⚠️ ไม่พบเอกสาร</h2><p>ลิงก์นี้อาจหมดอายุหรือไม่ถูกต้อง</p></div>`;
+return;
+}
+const { doc, cus, comp } = data;
+document.body.classList.add(‘light’);
+document.body.style.overflow = ‘auto’;
+document.getElementById(‘app-root’).style.display = ‘none’;
+// remove loading if exists
+const loading = document.getElementById(‘share-loading’);
+if (loading) loading.remove();
+document.body.insertAdjacentHTML(‘beforeend’, ` <div class="pub-page"> <div class="pub-toolbar"> <div class="pub-from">เอกสารจาก: <strong>${comp.companyName}</strong></div> <button class="pub-print" onclick="window.print()">🖨️ พิมพ์ / บันทึก PDF</button> </div> <div class="a4-wrapper">${genA4HTML(doc, cus, comp)}</div> </div>`);
+}
+
+// Handle ?share= (Firestore) mode
+const _shareId = new URLSearchParams(location.search).get(‘share’);
+// Handle ?pub= (legacy base64) mode
+const _pub = new URLSearchParams(location.search).get(‘pub’);
+
+if (_shareId) {
+// Show loading while Firestore fetches
+document.getElementById(‘app-root’).style.display = ‘none’;
+document.body.insertAdjacentHTML(‘beforeend’, ` <div class="share-loading" id="share-loading"> <div class="share-loading-inner"> <div class="share-loading-spinner"></div> <div>กำลังโหลดเอกสาร...</div> </div> </div>`);
+
+const tryInit = () => {
+if (window._shareLoaded) {
+initPublicViewer(window._shareData);
 } else {
-  // NORMAL APP
-  setPage('dashboard');
+window._onShareLoaded = () => initPublicViewer(window._shareData);
+}
+};
+// Firebase module might load slightly after script
+setTimeout(tryInit, 100);
+
+} else if (_pub) {
+// Legacy base64 mode
+try {
+const data = JSON.parse(atou(_pub));
+document.body.classList.add(‘light’);
+document.body.style.overflow = ‘auto’;
+document.getElementById(‘app-root’).style.display = ‘none’;
+document.body.insertAdjacentHTML(‘beforeend’, ` <div class="pub-page"> <div class="pub-toolbar"> <div class="pub-from">เอกสารจาก: <strong>${data.comp.companyName}</strong></div> <button class="pub-print" onclick="window.print()">🖨️ พิมพ์ / บันทึก PDF</button> </div> <div class="a4-wrapper">${genA4HTML(data.doc, data.cus, data.comp)}</div> </div>`);
+} catch {
+document.body.innerHTML = `<div style="padding:60px;text-align:center;font-family:'IBM Plex Sans Thai',sans-serif;color:#666"><h2>⚠️ ลิงก์ไม่ถูกต้อง</h2><p>กรุณาติดต่อผู้ส่งเอกสารเพื่อขอลิงก์ใหม่</p></div>`;
+}
+} else {
+// NORMAL APP
+setPage(‘dashboard’);
 }
 </script>
+
 </body>
 </html>
