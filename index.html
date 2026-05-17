@@ -286,21 +286,24 @@ tbody tr:hover td { background:var(--subtle); }
   overflow: hidden;
 }
 
-/* Ribbon Triangle Top Right */
+/* Ribbon Triangle Top Right (Drop shadow added) */
 .a4-corner {
   position: absolute;
   top: 0;
   right: 0;
+  z-index: 1;
+  filter: drop-shadow(-2px 2px 3px rgba(0,0,0,0.15));
+}
+.a4-corner-triangle {
   width: 0;
   height: 0;
   border-top: 80px solid var(--hex);
   border-left: 80px solid transparent;
-  z-index: 1;
 }
 .a4-corner-text {
   position: absolute;
-  top: -70px;
-  right: 12px;
+  top: 12px;
+  right: 15px;
   color: #fff;
   font-size: 16pt;
   font-weight: 700;
@@ -491,10 +494,8 @@ tbody tr:hover td { background:var(--subtle); }
 .pub-brand img { height:36px; max-width:120px; object-fit:contain; }
 .pub-brand-text { font-size:14px; font-weight:700; color:#0f172a; }
 .pub-actions { display:flex; gap:10px; align-items:center; }
-.pub-btn-primary { background:#14b8a6; color:#fff; border:none; padding:10px 24px; border-radius:6px; font-size:14px; font-weight:600; cursor:pointer; transition:opacity .2s; }
+.pub-btn-primary { background:#0f172a; color:#fff; border:none; padding:10px 24px; border-radius:6px; font-size:14px; font-weight:600; cursor:pointer; transition:opacity .2s; display:flex; align-items:center; gap:6px; }
 .pub-btn-primary:hover { opacity:0.9; }
-.pub-btn-icon { background:#fff; color:#14b8a6; border:1px solid #14b8a6; width:40px; height:40px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:18px; cursor:pointer; }
-.pub-btn-icon:hover { background:#f0fdfa; }
 
 .share-loading { display:flex; align-items:center; justify-content:center; min-height:100vh; background:#f1f5f9; }
 .share-loading-inner { color:#0f172a; font-family:'IBM Plex Sans Thai',sans-serif; font-size:16px; text-align:center; }
@@ -505,7 +506,7 @@ tbody tr:hover td { background:var(--subtle); }
   .pub-toolbar { padding:12px; flex-direction:column; align-items:stretch; }
   .pub-brand { justify-content:center; margin-bottom:10px; }
   .pub-actions { justify-content:center; }
-  .pub-btn-primary { flex:1; }
+  .pub-btn-primary { flex:1; justify-content:center; }
   .pub-page { padding:10px 0; }
   .pub-page .a4-wrapper { width:100%; overflow-x:auto; padding:0 10px; }
   .pub-page .a4-page { transform:none; margin:0 auto; }
@@ -641,14 +642,14 @@ const DEFAULT_DB = {
 
 let DB = (() => {
   try {
-    const raw = localStorage.getItem('bizflow_v20');
+    const raw = localStorage.getItem('bizflow_v23');
     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_DB));
     const p = JSON.parse(raw);
     if (!p.settings.issuerName) p.settings.issuerName = DEFAULT_DB.settings.issuerName;
     return p;
   } catch { return JSON.parse(JSON.stringify(DEFAULT_DB)); }
 })();
-const saveDB = () => localStorage.setItem('bizflow_v20', JSON.stringify(DB));
+const saveDB = () => localStorage.setItem('bizflow_v23', JSON.stringify(DB));
 
 /* ═══════════════════════════════════════
    THEME
@@ -824,7 +825,7 @@ function renderDashboard() {
 }
 
 /* ═══════════════════════════════════════
-   CUSTOMERS (Fully Restored Fields & Fix Select Syntax)
+   CUSTOMERS
 ═══════════════════════════════════════ */
 function renderCustomers() {
   const rows = DB.customers.map(c=>`
@@ -1231,8 +1232,9 @@ function genA4HTML(doc, customCus, customComp) {
   const page1 = `
   <div class="a4-page">
     ${stamp}
-    <!-- Ribbon top right -->
-    <div class="a4-corner" style="border-top-color: ${hex};">
+    <!-- Ribbon top right (WITH SHADOW) -->
+    <div class="a4-corner">
+      <div class="a4-corner-triangle" style="border-top-color: ${hex};"></div>
       <span class="a4-corner-text">1</span>
     </div>
 
@@ -1253,19 +1255,19 @@ function genA4HTML(doc, customCus, customComp) {
           <div class="a4-doc-copy" style="color:${hex}">ต้นฉบับ</div>
         </div>
         
-        <!-- แก้ไข: โครงสร้างใหม่แบบ Flex Box แก้ปัญหา CSS ชนกัน ทำให้ตัวอักษรชิดกันและเป็นสีดำคมชัด 100% -->
-        <div style="border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; padding: 6px 0; margin-top: 5px; font-size: 9.5pt; color: #000;">
-          <div style="display:flex; justify-content:space-between; margin-bottom: 2px;">
-            <span style="font-weight:600; width:50px;">เลขที่</span>
-            <span style="text-align:right;">${doc.id}</span>
+        <!-- กลับมาใช้ Inline Style แข็งๆ เพื่อรับประกันว่าสีดำและชิดกันแน่นอน 100% -->
+        <div style="border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; padding: 6px 0; margin-top: 8px;">
+          <div style="display: flex; justify-content: space-between; font-size: 10pt; color: #000; line-height: 1.4; margin-bottom: 2px;">
+            <div style="font-weight: 700; width: 60px; text-align: left;">เลขที่</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; text-align: right;">${doc.id}</div>
           </div>
-          <div style="display:flex; justify-content:space-between; margin-bottom: 2px;">
-            <span style="font-weight:600; width:50px;">วันที่</span>
-            <span style="text-align:right;">${doc.date}</span>
+          <div style="display: flex; justify-content: space-between; font-size: 10pt; color: #000; line-height: 1.4; margin-bottom: 2px;">
+            <div style="font-weight: 700; width: 60px; text-align: left;">วันที่</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; text-align: right;">${doc.date}</div>
           </div>
-          <div style="display:flex; justify-content:space-between;">
-            <span style="font-weight:600; width:50px;">ผู้ขาย</span>
-            <span style="text-align:right;">${comp.issuerName||comp.companyName}</span>
+          <div style="display: flex; justify-content: space-between; font-size: 10pt; color: #000; line-height: 1.4;">
+            <div style="font-weight: 700; width: 60px; text-align: left;">ผู้ขาย</div>
+            <div style="text-align: right;">${comp.issuerName||comp.companyName}</div>
           </div>
         </div>
         
@@ -1285,7 +1287,7 @@ function genA4HTML(doc, customCus, customComp) {
 
     <!-- Items Table -->
     <table class="a4-table">
-      <thead style="border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
+      <thead>
         <tr>
           <th style="width:30px; text-align:center;">#</th>
           <th>รายละเอียด</th>
@@ -1332,7 +1334,6 @@ function genA4HTML(doc, customCus, customComp) {
     <div style="flex-grow:1"></div>
 
     <!-- Signatures -->
-    <!-- แก้ไข: โครงสร้าง Flex Box ของลายเซ็น บังคับให้อยู่บรรทัดล่างสุดเท่ากันเสมอ -->
     <div class="a4-sigs">
       <!-- Customer Signature (Left) -->
       <div class="a4-sig-box">
@@ -1369,7 +1370,8 @@ function genA4HTML(doc, customCus, customComp) {
   // RESTORED: PAGE 2 (Bank / QR)
   const page2 = showPayPage ? `
   <div class="a4-page">
-    <div class="a4-corner" style="border-top-color: ${hex};">
+    <div class="a4-corner">
+      <div class="a4-corner-triangle" style="border-top-color: ${hex};"></div>
       <span class="a4-corner-text">2</span>
     </div>
     <div class="a4-header" style="margin-bottom:0">
@@ -1432,8 +1434,38 @@ function printDoc(id) {
 }
 
 /* ═══════════════════════════════════════
-   SHARE LINK
+   SHARE LINK (MODAL WITH CLICKABLE WEB LINK)
 ═══════════════════════════════════════ */
+function showShareModal(url) {
+  openModal(`
+    <div class="modal-hdr">
+      <span class="modal-hdr-title">🔗 ลิงก์สำหรับส่งให้ลูกค้า</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13.5px; color:var(--text-2); margin-bottom:15px;">
+        ส่งลิงก์ด้านล่างนี้ให้ลูกค้า เพื่อให้ลูกค้าเปิดดูเอกสารบนเว็บไซต์ได้ทันที (ไม่ต้องเข้าระบบ) และสามารถสั่งพิมพ์/บันทึก PDF ได้เลย
+      </p>
+      <div style="display:flex; gap:8px;">
+        <input type="text" class="form-control" value="${url}" id="share-url-input" readonly>
+        <button class="btn btn-primary" onclick="copyShareUrl()">คัดลอก</button>
+      </div>
+      <div style="margin-top:24px; text-align:center;">
+        <a href="${url}" target="_blank" class="btn btn-ghost" style="color:var(--accent-h); border-color:var(--accent);">
+          🌐 ทดสอบเปิดดูลิงก์
+        </a>
+      </div>
+    </div>
+  `);
+}
+
+function copyShareUrl() {
+  const input = document.getElementById('share-url-input');
+  input.select();
+  document.execCommand('copy');
+  toast('คัดลอกลิงก์เรียบร้อยแล้ว', 'link');
+}
+
 function shareDoc(id) {
   const doc = DB.documents.find(d => d.id === id);
   if (!doc) return;
@@ -1446,7 +1478,10 @@ function shareDoc(id) {
 
   if (db !== null) {
     db.collection('shared_docs').doc(shareId).set(fsPayload)
-      .then(() => { copyToClipboard(`${location.href.split('?')[0]}?share=${shareId}`, 'คัดลอกลิงก์แล้ว — ส่งให้ลูกค้าได้ทันที'); })
+      .then(() => { 
+        const url = `${window.location.origin}${window.location.pathname}?share=${shareId}`;
+        showShareModal(url);
+      })
       .catch(err => { console.warn('Firestore fallback:', err); fallbackShare(doc, cus, comp); });
   } else {
     fallbackShare(doc, cus, comp);
@@ -1455,14 +1490,9 @@ function shareDoc(id) {
 
 function fallbackShare(doc, cus, comp) {
   try {
-    const url = `${location.href.split('?')[0]}?pub=${utoa(JSON.stringify({ doc, cus, comp }))}`;
-    copyToClipboard(url, 'คัดลอกลิงก์แล้ว (offline mode)');
+    const url = `${window.location.origin}${window.location.pathname}?pub=${utoa(JSON.stringify({ doc, cus, comp }))}`;
+    showShareModal(url);
   } catch(e) { toast('ไม่สามารถสร้างลิงก์ได้ กรุณาใช้ปุ่มพิมพ์แทน', 'warn'); }
-}
-
-function copyToClipboard(text, msg) {
-  if (navigator.clipboard) { navigator.clipboard.writeText(text).then(() => toast(msg, 'link')); } 
-  else { const inp = document.createElement('input'); inp.value = text; document.body.appendChild(inp); inp.select(); document.execCommand('copy'); inp.remove(); toast(msg, 'link'); }
 }
 
 /* ═══════════════════════════════════════
@@ -1590,7 +1620,7 @@ function saveSettings() {
 }
 
 /* ═══════════════════════════════════════
-PUBLIC VIEWER (White Toolbar matching image)
+PUBLIC VIEWER (Web View for Customer)
 ═══════════════════════════════════════ */
 function showPublicViewer(data) {
   if (!data) { document.body.innerHTML = `<div style="padding:60px;text-align:center;font-family:'IBM Plex Sans Thai',sans-serif;color:#666"><h2>⚠️ ไม่พบเอกสาร</h2><p>ลิงก์นี้อาจหมดอายุหรือไม่ถูกต้อง กรุณาติดต่อผู้ส่งเอกสาร</p></div>`; return; }
@@ -1602,7 +1632,7 @@ function showPublicViewer(data) {
   if (loading) loading.remove();
 
   const brandHtml = comp.logo ? `<img src="${comp.logo}">` : `<div class="pub-brand-text">${comp.companyName}</div>`;
-  const actionHtml = doc.status === 'unpaid' ? `<button class="pub-btn-primary">ชำระเงิน</button>` : `<div style="color:#22c55e;font-weight:700;font-size:14px;padding:0 10px;">ชำระเงินแล้ว ✓</div>`;
+  const actionHtml = doc.status === 'unpaid' ? `<button class="pub-btn-primary" onclick="window.print()" style="background:#14b8a6; color:#fff;">🖨️ พิมพ์ / ดาวน์โหลด PDF</button>` : `<div style="display:flex; align-items:center; gap:10px;"><div style="color:#22c55e;font-weight:700;font-size:14px;padding:0 10px;">ชำระเงินแล้ว ✓</div><button class="pub-btn-primary" onclick="window.print()" style="background:#14b8a6; color:#fff;">🖨️ พิมพ์เอกสาร</button></div>`;
 
   document.body.insertAdjacentHTML('beforeend', `
     <div class="pub-page"> 
@@ -1610,8 +1640,6 @@ function showPublicViewer(data) {
         <div class="pub-brand">${brandHtml}</div> 
         <div class="pub-actions">
           ${actionHtml}
-          <button class="pub-btn-icon" onclick="window.print()" title="พิมพ์">🖨️</button> 
-          <button class="pub-btn-icon" onclick="window.print()" title="ดาวน์โหลด PDF">⬇️</button>
         </div>
       </div> 
       <div class="a4-wrapper" id="print-area" style="display:block !important;">${genA4HTML(doc, cus, comp)}</div> 
