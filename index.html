@@ -6,6 +6,10 @@
 <title>BizFlow — ระบบบัญชีออนไลน์ (พร้อมใช้งาน)</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 
+<!-- Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+
 <!-- Firebase CDN (compat mode) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -26,7 +30,6 @@
     firebase.initializeApp(firebaseConfig);
     db = firebase.firestore();
     firebase.analytics();
-    console.log("Firebase connected");
   } catch(e) {
     console.log("Firebase Init Error (Offline mode fallback):", e);
   }
@@ -151,6 +154,7 @@ input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
 .btn-ghost { background:transparent; color:var(--text-2); border:1px solid var(--border2); }
 .btn-ghost:hover { background:var(--subtle); color:var(--text); }
 .btn-icon { width:34px; height:34px; padding:0; border-radius:9px; }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* CARDS & GRIDS */
 .card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:22px; margin-bottom:18px; transition:background .3s,border-color .3s; }
@@ -247,6 +251,8 @@ tbody tr:hover td { background:var(--subtle); }
 .toast { background:var(--card); border:1px solid var(--border); border-left:4px solid var(--green); padding:12px 18px; border-radius:10px; box-shadow:var(--shadow); display:flex; align-items:center; gap:10px; font-size:13px; font-weight:500; animation:slideIn .3s ease; color:var(--text); max-width:340px; pointer-events:all; }
 .toast.link { border-left-color:var(--accent); }
 .toast.warn { border-left-color:var(--yellow); }
+.toast.success { border-left-color:var(--green); }
+.toast.info { border-left-color:var(--blue); }
 
 /* ANIMATIONS */
 @keyframes fIn     { from{opacity:0} to{opacity:1} }
@@ -263,12 +269,11 @@ tbody tr:hover td { background:var(--subtle); }
 .alert-warn { background:var(--yellow-s); border:1px solid rgba(245,158,11,.2); color:var(--yellow); }
 
 /* ═══════════════════════════════════
-   A4 DOCUMENT (Redesigned matching Image 100%)
+   A4 DOCUMENT
 ═══════════════════════════════════ */
 .a4-bg { background:#525659; }
 .a4-wrapper { width: 210mm; margin:0 auto; }
 
-/* เพิ่ม margin-bottom เพื่อไม่ให้หน้า 1 และหน้า 2 ติดกัน */
 .a4-page {
   width: 210mm;
   min-height: 297mm;
@@ -285,10 +290,10 @@ tbody tr:hover td { background:var(--subtle); }
   flex-direction: column;
   box-sizing: border-box;
   overflow: hidden;
-  margin-bottom: 24px; /* แยกหน้ากระดาษออกจากกัน */
+  margin-bottom: 24px;
 }
 
-/* Ribbon Triangle Top Right (Drop shadow added, NO TEXT) */
+/* Ribbon Triangle Top Right */
 .a4-corner {
   position: absolute;
   top: 0;
@@ -359,7 +364,6 @@ tbody tr:hover td { background:var(--subtle); }
 .a4-sig-box { width: 45%; font-size: 9pt; color: #0f172a; display:flex; flex-direction:column; justify-content: space-between; }
 .a4-sig-for { line-height: 1.4; margin-bottom: 10px; flex-grow: 1; }
 .a4-sig-bottom { width: 100%; }
-/* New CSS for split signature lines */
 .a4-sig-row { display: flex; justify-content: space-between; gap: 15px; }
 .a4-sig-col { flex: 1; display: flex; flex-direction: column; text-align: center; justify-content: flex-end; }
 .a4-sig-col.date-col { flex: 0.7; }
@@ -460,7 +464,6 @@ tbody tr:hover td { background:var(--subtle); }
   .modal-pdf-body { padding: 10px 0; }
   .a4-wrapper { width: 100%; overflow-x: auto; padding: 0 10px; box-sizing:border-box; }
   
-  /* แก้ไขการซูมในมือถือให้คำนวณระยะเว้นด้านล่างให้ถูกต้อง */
   .modal-pdf-body .a4-page { 
     transform: scale(0.35); 
     transform-origin: top left; 
@@ -499,9 +502,10 @@ tbody tr:hover td { background:var(--subtle); }
 .pub-brand { display:flex; align-items:center; gap:10px; }
 .pub-brand img { height:36px; max-width:120px; object-fit:contain; }
 .pub-brand-text { font-size:14px; font-weight:700; color:#0f172a; }
-.pub-actions { display:flex; gap:10px; align-items:center; }
+.pub-actions { display:flex; gap:10px; align-items:center; width: auto; flex-wrap: wrap; justify-content: flex-end; }
 .pub-btn-primary { background:#0f172a; color:#fff; border:none; padding:10px 24px; border-radius:6px; font-size:14px; font-weight:600; cursor:pointer; transition:opacity .2s; display:flex; align-items:center; gap:6px; }
 .pub-btn-primary:hover { opacity:0.9; }
+.pub-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .share-loading { display:flex; align-items:center; justify-content:center; min-height:100vh; background:#f1f5f9; }
 .share-loading-inner { color:#0f172a; font-family:'IBM Plex Sans Thai',sans-serif; font-size:16px; text-align:center; }
@@ -511,8 +515,8 @@ tbody tr:hover td { background:var(--subtle); }
 @media (max-width:768px) {
   .pub-toolbar { padding:12px; flex-direction:column; align-items:stretch; }
   .pub-brand { justify-content:center; margin-bottom:10px; }
-  .pub-actions { justify-content:center; flex-direction:column; }
-  .pub-btn-primary { width:100%; justify-content:center; padding:14px; font-size:15px; }
+  .pub-actions { justify-content:center; flex-direction:row; width:100%; gap:8px;}
+  .pub-btn-primary { flex:1; justify-content:center; padding:12px 14px; font-size:13.5px; }
   .pub-page { padding:10px 0; }
   .pub-page .a4-wrapper { width:100%; overflow-x:auto; padding:0 10px; }
 }
@@ -578,13 +582,57 @@ tbody tr:hover td { background:var(--subtle); }
 
 <script>
 /* ═══════════════════════════════════════
-   HELPERS
+   HELPERS & URL ENCODING
 ═══════════════════════════════════════ */
-const utoa = s => btoa(unescape(encodeURIComponent(s)));
-const atou = s => decodeURIComponent(escape(atob(s)));
 const money = n => Number(n).toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2});
 const genId = p => { const d = new Date(); return p + d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(Math.floor(Math.random()*1000)).padStart(3,'0'); };
-const todayStr = () => { const d = new Date(); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; };
+
+// แก้ไขฟังก์ชันวันที่ให้อิงตามเครื่องเป๊ะๆ ไม่คลาดเคลื่อน
+const todayStr = () => { 
+  const d = new Date();
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear(); // เช่น 2026
+  return `${day}/${month}/${year}`; 
+};
+
+// ใช้ LZ-String สำหรับบีบอัดข้อมูลแบบแข็งแกร่ง เปิดใน URL ได้ 100%
+const encodeDataToURL = (dataObj) => {
+    try {
+        const jsonStr = JSON.stringify(dataObj);
+        return LZString.compressToEncodedURIComponent(jsonStr);
+    } catch (e) {
+        console.error("Encode Error:", e);
+        return "";
+    }
+};
+
+const decodeDataFromURL = (lzStr) => {
+    try {
+        const jsonStr = LZString.decompressFromEncodedURIComponent(lzStr);
+        return JSON.parse(jsonStr);
+    } catch (e) {
+        console.error("Decode Error:", e);
+        return null;
+    }
+};
+
+/* ═══════════════════════════════════════
+   SHORT URL API (สร้างลิงก์สั้นผ่าน TinyURL)
+═══════════════════════════════════════ */
+async function shortenUrl(longUrl) {
+    try {
+        // ใช้ API จาก TinyURL เพื่อให้ได้ลิงก์ที่สั้นกริบและไม่โดนบล็อก
+        const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`);
+        if(res.ok) {
+            const text = await res.text();
+            if(text && text.startsWith('http')) return text;
+        }
+    } catch(e) {
+        console.error('TinyURL Error', e);
+    }
+    return longUrl; // หากดึงไม่สำเร็จ จะแสดงลิงก์แบบยาวเป็น Fallback
+}
 
 /* ═══════════════════════════════════════
    NAV CONFIG
@@ -614,7 +662,6 @@ const PAGE_TITLES = {
   line:'LINE OA Automation', settings:'ตั้งค่าระบบ',
 };
 
-// อัปเดตสี (hex) เป็นฟ้าเขียวทั้งหมด (#14b8a6)
 const DOC_META = {
   QT:  { title:'ใบเสนอราคา',               prefix:'QT',  hex:'#14b8a6', bClass:'b-teal' },
   INV: { title:'ใบแจ้งหนี้',               prefix:'INV', hex:'#14b8a6', bClass:'b-blue' },
@@ -688,7 +735,7 @@ function toast(msg, type='') {
   const box = document.getElementById('toasts');
   const el = document.createElement('div');
   el.className = 'toast' + (type ? ' '+type : '');
-  const icon = type==='link'?'🔗':type==='warn'?'⚠️':'✅';
+  const icon = type==='link'?'🔗':type==='warn'?'⚠️':type==='success'?'✅':'✅';
   el.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
   box.appendChild(el);
   setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); }, 4000);
@@ -872,7 +919,7 @@ function saveCustomer(inline) {
   const name = document.getElementById('c-name').value.trim();
   if (!name) return toast('กรุณากรอกชื่อลูกค้า', 'warn');
   const c = { id:genId('C'), name, address:document.getElementById('c-address').value, taxId:document.getElementById('c-tax').value, phone:document.getElementById('c-phone').value, email:document.getElementById('c-email').value };
-  DB.customers.push(c); saveDB(); closeModal(); toast('เพิ่มลูกค้าแล้ว');
+  DB.customers.push(c); saveDB(); closeModal(); toast('เพิ่มลูกค้าแล้ว', 'success');
   if (inline) {
     draft.customerId=c.id; draft.customerName=c.name; draft.customerPhone=c.phone||''; draft.customerTaxId=c.taxId||''; draft.customerAddress=c.address||''; draft.customerEmail=c.email||'';
     const inp=document.getElementById('cus-combo-inp'); if(inp){ inp.value=c.name.split('\n')[0]; }
@@ -925,7 +972,7 @@ function saveProduct() {
   const name=document.getElementById('p-name').value.trim();
   if(!name) return toast('กรุณาระบุชื่อสินค้า', 'warn');
   DB.products.push({id:genId('P'),name,price:+document.getElementById('p-price').value});
-  saveDB(); closeModal(); toast('เพิ่มสินค้าแล้ว'); setPage('products');
+  saveDB(); closeModal(); toast('เพิ่มสินค้าแล้ว', 'success'); setPage('products');
 }
 function delProduct(id) { customConfirm('คุณต้องการลบสินค้านี้ใช่หรือไม่?', () => { DB.products=DB.products.filter(p=>p.id!==id); saveDB(); setPage('products'); }); }
 
@@ -944,7 +991,7 @@ function renderDocList(type) {
       <td style="font-family:var(--font-mono);font-weight:600">฿${money(doc.total)}</td>
       <td>${statusBadge(doc.status,type)}</td>
       <td><div style="display:flex;gap:6px">
-        <button class="btn btn-ghost btn-sm" onclick="previewDoc('${doc.id}')">ดู / PDF</button>
+        <button class="btn btn-ghost btn-sm" onclick="previewDoc('${doc.id}')">เปิดดู</button>
         <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="delDoc('${doc.id}')">ลบ</button>
       </div></td></tr>`;
   }).join('')||`<tr><td colspan="6"><div class="empty"><span class="empty-icon">📄</span><div class="empty-text">ยังไม่มีเอกสาร${m.title}</div></div></td></tr>`;
@@ -988,7 +1035,7 @@ function processPayment(invId) {
   customConfirm(`ยืนยันการรับชำระเงินจำนวน ฿${money(inv.total)} จาก\n${cus.name.split('\n')[0]} ใช่หรือไม่?`, () => {
     inv.status='paid';
     const re={...JSON.parse(JSON.stringify(inv)),id:genId('RE'),type:'RE',status:'paid',date:todayStr()};
-    DB.documents.push(re); saveDB(); toast(`รับชำระแล้ว ออกใบเสร็จ ${re.id}`); setPage('docs-RE');
+    DB.documents.push(re); saveDB(); toast(`รับชำระแล้ว ออกใบเสร็จ ${re.id}`, 'success'); setPage('docs-RE');
   });
 }
 
@@ -1196,7 +1243,7 @@ function saveDraft() {
   if(!items.length) return toast('กรุณาเพิ่มรายการอย่างน้อย 1 รายการ', 'warn');
   const statusMap={QT:'sent',INV:'unpaid',BL:'sent',RE:'paid'};
   const doc={...JSON.parse(JSON.stringify(draft)),id:genId(draft.type),items,status:statusMap[draft.type]};
-  DB.documents.push(doc); saveDB(); toast(`บันทึกเอกสาร ${doc.id} แล้ว`); setPage(`docs-${doc.type}`);
+  DB.documents.push(doc); saveDB(); toast(`บันทึกเอกสาร ${doc.id} แล้ว`, 'success'); setPage(`docs-${doc.type}`);
 }
 
 function delDoc(id) { customConfirm('คุณต้องการลบเอกสารนี้ถาวรใช่หรือไม่?', () => { const type=DB.documents.find(d=>d.id===id)?.type; DB.documents=DB.documents.filter(d=>d.id!==id); saveDB(); setPage(`docs-${type}`); }); }
@@ -1237,7 +1284,7 @@ function genA4HTML(doc, customCus, customComp) {
   const page1 = `
   <div class="a4-page">
     ${stamp}
-    <!-- Ribbon top right (WITH SHADOW, NO TEXT) -->
+    <!-- Ribbon top right -->
     <div class="a4-corner" style="position:absolute; top:0; right:0; z-index:10; filter: drop-shadow(-3px 3px 5px rgba(0,0,0,0.15));">
       <div style="width:0; height:0; border-top: 85px solid ${hex}; border-left: 85px solid transparent;"></div>
     </div>
@@ -1259,7 +1306,6 @@ function genA4HTML(doc, customCus, customComp) {
           <div class="a4-doc-copy" style="color:${hex}">ต้นฉบับ</div>
         </div>
         
-        <!-- กลับมาใช้ Inline Style แข็งๆ เพื่อรับประกันว่าสีดำและชิดกันแน่นอน 100% -->
         <div style="border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; padding: 6px 0; margin-top: 8px;">
           <div style="display: flex; justify-content: space-between; font-size: 10pt; color: #000; line-height: 1.4; margin-bottom: 2px;">
             <div style="font-weight: 700; width: 60px; text-align: left;">เลขที่</div>
@@ -1381,7 +1427,7 @@ function genA4HTML(doc, customCus, customComp) {
     <div class="a4-footer-sys"><strong>AI BUSINESS & LINE OA AUTOMATION</strong></div>
   </div>`;
 
-  // RESTORED: PAGE 2 (Bank / QR)
+  // PAGE 2 (Bank / QR)
   const page2 = showPayPage ? `
   <div class="a4-page">
     <div class="a4-corner" style="position:absolute; top:0; right:0; z-index:10; filter: drop-shadow(-3px 3px 5px rgba(0,0,0,0.15));">
@@ -1434,20 +1480,112 @@ function openDocPreview(doc) {
     <div class="modal-ftr">
       <button class="btn btn-ghost" onclick="closeModal()">ปิด</button>
       ${!doc.isDraft
-        ?`<button class="btn btn-ghost" style="color:var(--accent-h);border-color:var(--accent)" onclick="shareDoc('${doc.id}')">🔗 ลิงก์ส่งลูกค้า</button>
-          <button class="btn btn-primary" onclick="printDoc('${doc.id}')">🖨️ พิมพ์ / PDF</button>`
+        ?`<button class="btn btn-ghost" style="color:var(--accent-h);border-color:var(--accent)" onclick="shareDocOffline('${doc.id}')">🔗 สร้างลิงก์แชร์</button>
+          <button id="btn-dl-pdf" class="btn btn-ghost" style="color:var(--red);border-color:var(--red)" onclick="downloadPDF('${doc.id}')">📄 แชร์/โหลด PDF</button>
+          <button class="btn btn-primary" onclick="printDoc('${doc.id}')">🖨️ พิมพ์</button>`
         :`<button class="btn" style="background:${m.hex};color:#fff" onclick="closeModal();saveDraft()">💾 บันทึก</button>`}
     </div>`,true);
 }
 
 function printDoc(id) {
-  const doc=DB.documents.find(d=>d.id===id);
-  document.getElementById('print-area').innerHTML=`<div class="a4-wrapper">${genA4HTML(doc)}</div>`;
+  const doc = DB.documents.find(d=>d.id===id) || window.currentPubDoc;
+  const cus = window.currentPubCus || null;
+  const comp = window.currentPubComp || null;
+  document.getElementById('print-area').innerHTML=`<div class="a4-wrapper">${genA4HTML(doc, cus, comp)}</div>`;
   setTimeout(()=>window.print(),200);
 }
 
 /* ═══════════════════════════════════════
-   SHARE LINK (MODAL WITH CLICKABLE WEB LINK)
+   DOWNLOAD & SHARE PDF FUNCTION (MOBILE + PC 100%)
+═══════════════════════════════════════ */
+function downloadPDF(id) {
+  const btn = document.getElementById('btn-dl-pdf');
+  if(btn) { btn.disabled = true; btn.innerHTML = '⏳ กำลังสร้าง...'; }
+
+  const doc = (DB.documents || []).find(d => d.id === id) || window.currentPubDoc;
+  if(!doc) {
+      if(btn) { btn.disabled = false; btn.innerHTML = '📄 แชร์/โหลด PDF'; }
+      return;
+  }
+  toast('กำลังเตรียมไฟล์ PDF กรุณารอสักครู่...', 'warn');
+  
+  const cus = window.currentPubCus || null;
+  const comp = window.currentPubComp || null;
+  
+  // ซ่อน DOM พิเศษเพื่อเรนเดอร์ PDF
+  const tempDiv = document.createElement('div');
+  tempDiv.style.position = 'absolute';
+  tempDiv.style.left = '-9999px';
+  tempDiv.style.top = '0';
+  tempDiv.style.width = '210mm';
+  tempDiv.innerHTML = `<div class="pdf-export-wrap">${genA4HTML(doc, cus, comp)}</div>`;
+  document.body.appendChild(tempDiv);
+  
+  const style = document.createElement('style');
+  style.innerHTML = `
+    .pdf-export-wrap .a4-page {
+        margin: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        transform: none !important;
+        page-break-after: always;
+    }
+    .pdf-export-wrap .a4-page:last-child {
+        page-break-after: auto;
+    }
+  `;
+  tempDiv.appendChild(style);
+
+  const opt = {
+    margin:       0,
+    filename:     `${doc.id}.pdf`,
+    image:        { type: 'jpeg', quality: 1 },
+    html2canvas:  { scale: 2, useCORS: true, windowWidth: 794 }, // A4 width
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  
+  // สร้างไฟล์ PDF เป็น Blob
+  html2pdf().set(opt).from(tempDiv).output('blob').then(function(pdfBlob) {
+    document.body.removeChild(tempDiv);
+    if(btn) { btn.disabled = false; btn.innerHTML = '📄 แชร์/โหลด PDF'; }
+    
+    const file = new File([pdfBlob], `${doc.id}.pdf`, { type: 'application/pdf' });
+    
+    // เรียกใช้เมนู Share ของระบบ (มือถือ iOS/Android จะเด้งเมนูให้ส่งเข้า LINE/FB ได้เลย)
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({
+            title: `เอกสาร ${doc.id}`,
+            files: [file]
+        }).then(() => toast('แชร์ PDF สำเร็จ!', 'success')).catch((e) => {
+            // หากผู้ใช้กดยกเลิก หรือเบราว์เซอร์ไม่ยอมให้แชร์ข้ามแอป ให้ดาวน์โหลดลงเครื่องทันที
+            saveBlobAsFile(pdfBlob, `${doc.id}.pdf`);
+        });
+    } else {
+        // สำหรับระบบ PC หรือ เบราว์เซอร์ที่ไม่รองรับ Share Sheet
+        saveBlobAsFile(pdfBlob, `${doc.id}.pdf`);
+    }
+  }).catch(e => {
+      if(document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+      if(btn) { btn.disabled = false; btn.innerHTML = '📄 แชร์/โหลด PDF'; }
+      toast('เกิดข้อผิดพลาดในการสร้าง PDF', 'warn');
+      console.error(e);
+  });
+}
+
+function saveBlobAsFile(blob, fileName) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('ดาวน์โหลด PDF สำเร็จ!', 'success');
+}
+
+/* ═══════════════════════════════════════
+   SHARE LINK (ย่อลิงก์ด้วย TinyURL ให้สั้นกริบ)
 ═══════════════════════════════════════ */
 function showShareModal(url) {
   openModal(`
@@ -1457,16 +1595,16 @@ function showShareModal(url) {
     </div>
     <div class="modal-body" style="text-align:center; padding-top:10px;">
       <div style="background:var(--green-s); color:var(--green); padding:12px; border-radius:8px; margin-bottom:24px; font-size:13.5px; font-weight:600; text-align:left;">
-        ✅ สร้างลิงก์สำเร็จ! <br><span style="font-weight:400; color:var(--text-2);">ลูกค้าเปิดดูเอกสารบนเว็บไซต์ได้ทันที (ไม่ต้องเข้าระบบ) และสามารถสั่งพิมพ์ได้เลย</span>
+        ✅ สร้างลิงก์แชร์สำเร็จ! <br><span style="font-weight:400; color:var(--text-2);">ลูกค้าสามารถเปิดลิงก์นี้บนมือถือ และดาวน์โหลด PDF ได้ด้วยตนเอง</span>
       </div>
       <div style="display:flex; gap:8px; margin-bottom:24px;">
-        <input type="text" class="form-control" value="${url}" id="share-url-input" readonly style="background:#fff; color:#000; font-family:monospace; font-size:12px;">
-        <button class="btn btn-primary" onclick="copyShareUrl()" style="white-space:nowrap;">คัดลอกลิงก์</button>
+        <input type="text" class="form-control" value="${url}" id="share-url-input" readonly style="background:#fff; color:#000; font-family:monospace; font-size:14px; padding: 10px;">
+        <button class="btn btn-primary" onclick="copyShareUrl()" style="white-space:nowrap; padding: 0 14px;">คัดลอก</button>
+        <button class="btn" onclick="shareToLine('${url}')" style="background:#00B900; color:#fff; white-space:nowrap; padding: 0 16px; border: none;">LINE</button>
       </div>
       <div style="border-top:1px solid var(--border); padding-top:24px;">
-        <!-- ลิงก์ที่กดแล้วเปิดหน้าเว็บ Public ให้ลูกค้ากดพิมพ์ได้ทันที -->
         <a href="${url}" target="_blank" class="btn btn-success btn-lg" style="width:100%; display:flex; justify-content:center; gap:8px; text-decoration:none;">
-          <span style="font-size:18px;">🌐</span> เปิดดูมุมมองลูกค้า (ทดสอบพิมพ์)
+          <span style="font-size:18px;">🌐</span> ทดสอบเปิดดูมุมมองลูกค้า
         </a>
       </div>
     </div>
@@ -1480,196 +1618,86 @@ function copyShareUrl() {
   toast('คัดลอกลิงก์เรียบร้อยแล้ว', 'link');
 }
 
-function shareDoc(id) {
+function shareToLine(url) {
+  const text = encodeURIComponent('เอกสารสำหรับคุณ สามารถเปิดดูและดาวน์โหลดไฟล์ PDF ได้ที่นี่: \n\n' + url);
+  window.open(`https://line.me/R/msg/text/?${text}`, '_blank');
+}
+
+// ผสมผสาน LZ-String Offline + TinyURL API 
+async function shareDocOffline(id) {
   const doc = DB.documents.find(d => d.id === id);
   if (!doc) return;
   const cus  = getCusFromDoc(doc);
-  const comp = { ...DB.settings, logo: '', signature: '', qrCode: '' }; // Strip images for URL safety
-  const shareId  = id.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const fsPayload = { doc, cus, comp: { ...comp, logo: DB.settings.logo||'', signature: DB.settings.signature||'', qrCode: DB.settings.qrCode||'' }, createdAt: Date.now() };
+  
+  // ตัดรูปภาพใน URL ทิ้ง เพื่อป้องกันข้อมูลขนาดเกินขีดจำกัด (รูปจะกลายเป็นข้อความแทน)
+  const stripComp = { ...DB.settings, logo: '', signature: '', qrCode: '' }; 
 
-  toast('กำลังสร้างลิงก์...', 'warn');
-
-  // ใช้การสร้าง Base64 URL เป็นหลัก รับประกันว่าเปิดได้ทันทีโดยไม่ต้องพึ่ง Database
-  setTimeout(() => {
-    fallbackShare(doc, cus, comp);
-  }, 300);
-}
-
-function fallbackShare(doc, cus, comp) {
   try {
+    toast('กำลังสร้างลิงก์แบบสั้น (Short Link)...', 'warn');
     const baseUrl = window.location.href.split('?')[0].split('#')[0];
-    const url = `${baseUrl}?pub=${utoa(JSON.stringify({ doc, cus, comp }))}`;
-    showShareModal(url);
-  } catch(e) { toast('ไม่สามารถสร้างลิงก์ได้ กรุณาใช้ปุ่มพิมพ์แทน', 'warn'); }
-}
-
-/* ═══════════════════════════════════════
-   REPORTS
-═══════════════════════════════════════ */
-function renderReports() {
-  const paid=DB.documents.filter(d=>d.status==='paid').reduce((s,d)=>s+d.total,0);
-  const unpaid=DB.documents.filter(d=>d.status==='unpaid').reduce((s,d)=>s+d.total,0);
-  const qtCount=DB.documents.filter(d=>d.type==='QT').length;
-  const rows=[...DB.documents].reverse().map(d=>`
-    <tr>
-      <td>${DOC_META[d.type].title}</td>
-      <td style="font-family:var(--font-mono);font-size:12px">${d.id}</td>
-      <td>${getCusFromDoc(d).name.split('\n')[0]}</td>
-      <td>${d.date}</td>
-      <td style="font-family:var(--font-mono);font-weight:600">฿${money(d.total)}</td>
-      <td>${statusBadge(d.status,d.type)}</td>
-    </tr>`).join('')||`<tr><td colspan="6"><div class="empty"><span class="empty-icon">📊</span><div class="empty-text">ยังไม่มีข้อมูล</div></div></td></tr>`;
-  return `
-  <div class="g3 fu">
-    <div class="card" style="margin-bottom:0"><div class="kpi-label">รายได้ที่รับแล้ว (YTD)</div><div class="kpi-value" style="color:var(--green)">฿${money(paid)}</div></div>
-    <div class="card" style="margin-bottom:0"><div class="kpi-label">ยอดค้างรับ (AR)</div><div class="kpi-value" style="color:var(--yellow)">฿${money(unpaid)}</div></div>
-    <div class="card" style="margin-bottom:0"><div class="kpi-label">ใบเสนอราคาทั้งหมด</div><div class="kpi-value" style="color:var(--teal)">${qtCount} ใบ</div></div>
-  </div>
-  <div class="card fu1">
-    <span class="sec-title">รายการเอกสารทั้งหมด</span>
-    <div class="tbl-wrap" style="margin-bottom:0">
-      <table><thead><tr><th>ประเภท</th><th>เลขที่</th><th>ลูกค้า</th><th>วันที่</th><th>ยอดสุทธิ</th><th>สถานะ</th></tr></thead><tbody>${rows}</tbody></table>
-    </div>
-  </div>`;
-}
-
-/* ═══════════════════════════════════════
-   LINE OA
-═══════════════════════════════════════ */
-function renderLine() {
-  return `
-  <div class="g2 fu">
-    <div class="card">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
-        <div style="width:40px;height:40px;border-radius:12px;background:var(--green-s);display:flex;align-items:center;justify-content:center;font-size:20px">💬</div>
-        <div><div style="font-weight:700">LINE OA Automation</div><div style="font-size:12px;color:var(--green)">● เชื่อมต่อแล้ว</div></div>
-      </div>
-      ${[['Channel ID','@bizflow_th'],['Webhook URL','https://api.bizflow.app/webhook']].map(([k,v])=>`
-        <div style="padding:10px 0;border-bottom:1px solid var(--border)">
-          <div style="font-size:11px;font-weight:700;color:var(--text-3);margin-bottom:4px;text-transform:uppercase">${k}</div>
-          <div style="font-size:13px;color:var(--accent-h)">${v}</div>
-        </div>`).join('')}
-      <div style="margin-top:16px"><label style="display:flex;justify-content:space-between;align-items:center;font-size:13px"><span>แจ้งเตือนเมื่อออกบิลใหม่</span><input type="checkbox" checked></label></div>
-    </div>
-  </div>`;
-}
-
-/* ═══════════════════════════════════════
-   SETTINGS
-═══════════════════════════════════════ */
-function renderSettings() {
-  const s = DB.settings;
-  return `
-  <div class="g2 fu">
-    <div class="card">
-      <span class="sec-title">🏢 ข้อมูลบริษัท</span>
-      <div class="g2" style="margin-bottom:0">
-        <div class="form-group">
-          <label class="form-label">โลโก้บริษัท</label>
-          ${s.logo?`<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px;margin-bottom:8px"><img id="logo-prev" src="${s.logo}" style="width:100%;height:56px;object-fit:contain"></div>`:`<div id="logo-prev-wrap"></div>`}
-          <input type="file" accept="image/*" class="form-control" style="padding:8px;font-size:11.5px" onchange="uploadImg(this,'logo','logo-prev')">
-        </div>
-        <div class="form-group">
-          <label class="form-label">ลายเซ็น</label>
-          ${s.signature?`<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px;margin-bottom:8px"><img id="sig-prev" src="${s.signature}" style="width:100%;height:56px;object-fit:contain"></div>`:`<div id="sig-prev-wrap"></div>`}
-          <input type="file" accept="image/*" class="form-control" style="padding:8px;font-size:11.5px" onchange="uploadImg(this,'sig','sig-prev')">
-        </div>
-      </div>
-      <div class="form-group"><label class="form-label">ชื่อบริษัท / ร้านค้า</label><input id="s-name" class="form-control" value="${s.companyName}"></div>
-      <div class="form-group"><label class="form-label">เลขผู้เสียภาษี</label><input id="s-tax" class="form-control" value="${s.taxId}"></div>
-      <div class="form-group"><label class="form-label">ที่อยู่</label><textarea id="s-addr" class="form-control" rows="3">${s.address}</textarea></div>
-      <div class="form-group"><label class="form-label">ชื่อผู้ออกเอกสาร</label><input id="s-issuer" class="form-control" value="${s.issuerName}"></div>
-    </div>
-    <div>
-      <div class="card">
-        <span class="sec-title">🏦 ข้อมูลธนาคาร & QR Code</span>
-        <div class="form-group">
-          <label class="form-label">QR Code รับเงิน</label>
-          ${s.qrCode?`<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px;width:100px;margin-bottom:8px"><img id="qr-prev" src="${s.qrCode}" style="width:100%;height:90px;object-fit:contain"></div>`:`<div id="qr-prev-wrap"></div>`}
-          <input type="file" accept="image/*" class="form-control" style="padding:8px;font-size:11.5px" onchange="uploadImg(this,'qr','qr-prev')">
-        </div>
-        <div class="g2" style="margin-bottom:0">
-          <div class="form-group"><label class="form-label">ชื่อธนาคาร</label><input id="s-bname" class="form-control" value="${s.bankName}"></div>
-          <div class="form-group"><label class="form-label">เลขบัญชี</label><input id="s-bacc" class="form-control" value="${s.bankAcc}"></div>
-          <div class="form-group"><label class="form-label">สาขา</label><input id="s-bbranch" class="form-control" value="${s.bankBranch}"></div>
-          <div class="form-group"><label class="form-label">ชื่อบัญชี</label><input id="s-bowner" class="form-control" value="${s.bankOwner}"></div>
-        </div>
-      </div>
-      <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center" onclick="saveSettings()">💾 บันทึกการตั้งค่า</button>
-    </div>
-  </div>`;
-}
-
-function uploadImg(input, key, imgId) {
-  if(!input.files || !input.files[0]) return;
-  const r = new FileReader();
-  r.onload = e => {
-    DB.settings[key === 'logo' ? 'logo' : key === 'sig' ? 'signature' : 'qrCode'] = e.target.result;
-    let el = document.getElementById(imgId);
-    if(!el){
-      const wrap = document.getElementById(imgId + '-wrap');
-      if(wrap) wrap.innerHTML = `<div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px;margin-bottom:8px"><img id="${imgId}" src="${e.target.result}" style="width:100%;height:56px;object-fit:contain"></div>`;
-    } else { el.src = e.target.result; }
-  };
-  r.readAsDataURL(input.files[0]);
-}
-
-function saveSettings() {
-  const s = DB.settings;
-  s.companyName = document.getElementById('s-name').value;
-  s.taxId = document.getElementById('s-tax').value;
-  s.address = document.getElementById('s-addr').value;
-  s.issuerName = document.getElementById('s-issuer').value;
-  s.bankName = document.getElementById('s-bname').value;
-  s.bankAcc = document.getElementById('s-bacc').value;
-  s.bankBranch = document.getElementById('s-bbranch').value;
-  s.bankOwner = document.getElementById('s-bowner').value;
-  saveDB(); toast('บันทึกการตั้งค่าแล้ว'); renderNav();
+    const encodedData = encodeDataToURL({ doc, cus, comp: stripComp });
+    const longUrl = `${baseUrl}?pub=${encodedData}`;
+    
+    // ย่อลิงก์ให้สั้นลงด้วย TinyURL
+    const shortUrl = await shortenUrl(longUrl);
+    showShareModal(shortUrl);
+  } catch(e) { 
+    console.error(e);
+    toast('เกิดข้อผิดพลาด กรุณาใช้แชร์เป็น PDF แทน', 'warn'); 
+  }
 }
 
 /* ═══════════════════════════════════════
 PUBLIC VIEWER (Web View for Customer)
 ═══════════════════════════════════════ */
 function showPublicViewer(data) {
-  if (!data) { document.body.innerHTML = `<div style="padding:60px;text-align:center;font-family:'IBM Plex Sans Thai',sans-serif;color:#666"><h2>⚠️ ไม่พบเอกสาร</h2><p>ลิงก์นี้อาจหมดอายุหรือไม่ถูกต้อง กรุณาติดต่อผู้ส่งเอกสาร</p></div>`; return; }
+  if (!data) { document.body.innerHTML = `<div style="padding:60px;text-align:center;font-family:'IBM Plex Sans Thai',sans-serif;color:#666"><h2>⚠️ ลิงก์เอกสารไม่ถูกต้อง</h2><p>ลิงก์อาจถูกตัดหรือหมดอายุ กรุณาติดต่อผู้ส่งเอกสารอีกครั้ง</p></div>`; return; }
   const { doc, cus, comp } = data;
+  
+  // เก็บ State ไว้ให้ฟังก์ชัน Print และ Download PDF ดึงไปใช้
+  window.currentPubDoc = doc;
+  window.currentPubCus = cus;
+  window.currentPubComp = comp;
+
   document.body.classList.add('light');
   document.body.style.overflow = 'auto';
   document.getElementById('app-root').style.display = 'none';
-  const loading = document.getElementById('share-loading');
-  if (loading) loading.remove();
 
   const brandHtml = comp.logo ? `<img src="${comp.logo}">` : `<div class="pub-brand-text">${comp.companyName}</div>`;
   const actionHtml = doc.status === 'unpaid' 
-    ? `<button class="pub-btn-primary" onclick="window.print()" style="background:#14b8a6; color:#fff; font-size:16px; padding:14px 28px; box-shadow:0 4px 12px rgba(20,184,166,0.3); border-radius:8px;">🖨️ พิมพ์ / ดาวน์โหลด PDF</button>` 
-    : `<div style="display:flex; align-items:center; gap:15px;"><div style="color:#22c55e;font-weight:700;font-size:15px; background:#f0fdf4; padding:8px 16px; border-radius:8px; border:1px solid #bbf7d0;">ชำระเงินแล้ว ✓</div><button class="pub-btn-primary" onclick="window.print()" style="background:#0f172a; color:#fff;">🖨️ พิมพ์เอกสาร</button></div>`;
+    ? `<div style="display:flex; gap:10px; width: 100%;">
+         <button id="btn-dl-pdf" class="pub-btn-primary" onclick="downloadPDF('${doc.id}')" style="background:#14b8a6; color:#fff; flex:1; justify-content:center; white-space:nowrap;">📄 โหลด PDF</button>
+         <button class="pub-btn-primary" onclick="printDoc('${doc.id}')" style="background:#0f172a; color:#fff; flex:1; justify-content:center; white-space:nowrap;">🖨️ พิมพ์</button>
+       </div>` 
+    : `<div style="display:flex; align-items:center; gap:15px; flex-wrap:wrap; justify-content:center;">
+         <div style="color:#22c55e;font-weight:700;font-size:15px; background:#f0fdf4; padding:8px 16px; border-radius:8px; border:1px solid #bbf7d0; white-space:nowrap;">ชำระเงินแล้ว ✓</div>
+         <button id="btn-dl-pdf" class="pub-btn-primary" onclick="downloadPDF('${doc.id}')" style="background:#14b8a6; color:#fff; white-space:nowrap;">📄 โหลด PDF</button>
+         <button class="pub-btn-primary" onclick="printDoc('${doc.id}')" style="background:#0f172a; color:#fff; white-space:nowrap;">🖨️ พิมพ์</button>
+       </div>`;
 
   document.body.insertAdjacentHTML('beforeend', `
     <div class="pub-page"> 
       <div class="pub-toolbar"> 
         <div class="pub-brand">${brandHtml}</div> 
-        <div class="pub-actions">
-          ${actionHtml}
-        </div>
+        <div class="pub-actions">${actionHtml}</div>
       </div> 
       <div class="a4-wrapper" id="print-area" style="display:block !important;">${genA4HTML(doc, cus, comp)}</div> 
     </div>`);
 }
 
 /* ─── Detect share/pub params ─── */
-const _shareId = new URLSearchParams(location.search).get('share');
-const _pub     = new URLSearchParams(location.search).get('pub');
+const _pub = new URLSearchParams(location.search).get('pub');
 
-if (_shareId) {
-  document.getElementById('app-root').style.display = 'none';
-  document.body.insertAdjacentHTML('beforeend', `<div class="share-loading" id="share-loading"> <div class="share-loading-inner"> <div class="share-loading-spinner"></div> <div>กำลังโหลดเอกสาร...</div> </div> </div>`);
-  if (db !== null) {
-    db.collection('shared_docs').doc(_shareId).get().then(snap => { showPublicViewer(snap.exists ? snap.data() : null); }).catch(err => { console.error('Firestore load error:', err); showPublicViewer(null); });
-  } else { showPublicViewer(null); }
-} else if (_pub) {
-  try { showPublicViewer(JSON.parse(atou(_pub))); } catch { document.body.innerHTML = `<div style="padding:60px;text-align:center;font-family:'IBM Plex Sans Thai',sans-serif;color:#666"><h2>⚠️ ลิงก์ไม่ถูกต้อง</h2><p>กรุณาติดต่อผู้ส่งเอกสาร</p></div>`; }
-} else { setPage('dashboard'); }
+if (_pub) {
+  try { 
+      const data = decodeDataFromURL(_pub);
+      showPublicViewer(data); 
+  } catch { 
+      document.body.innerHTML = `<div style="padding:60px;text-align:center;font-family:'IBM Plex Sans Thai',sans-serif;color:#666"><h2>⚠️ ลิงก์ไม่ถูกต้อง หรือถูกดัดแปลง</h2><p>กรุณาตรวจสอบลิงก์อีกครั้ง</p></div>`; 
+  }
+} else { 
+    setPage('dashboard'); 
+}
 </script>
 
 </body>
