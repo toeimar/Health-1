@@ -240,7 +240,7 @@ tbody tr:hover td { background:var(--subtle); }
 .modal-close:hover { background:var(--subtle); }
 .modal-body { padding:22px; overflow-y:auto; flex:1; -webkit-overflow-scrolling:touch; }
 .modal-ftr { padding:16px 22px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px; flex-shrink:0; flex-wrap:wrap; }
-.modal-pdf-body { background:#525659; padding:20px 0; overflow-y:auto; flex:1; display:flex; flex-direction:column; align-items:center; }
+.modal-pdf-body { background:#525659; padding:20px 0; overflow-y:auto; flex:1; display:flex; flex-direction:column; align-items:center; gap:24px; }
 
 /* TOASTS */
 .toasts { position:fixed; bottom:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
@@ -268,7 +268,7 @@ tbody tr:hover td { background:var(--subtle); }
 .a4-bg { background:#525659; }
 .a4-wrapper { width: 210mm; margin:0 auto; }
 
-/* แยกหน้ากระดาษออกจากกันชัดเจน 40px */
+/* เพิ่ม margin-bottom เพื่อไม่ให้หน้า 1 และหน้า 2 ติดกัน */
 .a4-page {
   width: 210mm;
   min-height: 297mm;
@@ -285,7 +285,7 @@ tbody tr:hover td { background:var(--subtle); }
   flex-direction: column;
   box-sizing: border-box;
   overflow: hidden;
-  margin-bottom: 40px; 
+  margin-bottom: 24px; /* แยกหน้ากระดาษออกจากกัน */
 }
 
 /* Ribbon Triangle Top Right (Drop shadow added, NO TEXT) */
@@ -299,8 +299,8 @@ tbody tr:hover td { background:var(--subtle); }
 .a4-corner-triangle {
   width: 0;
   height: 0;
-  border-top: 80px solid var(--hex);
-  border-left: 80px solid transparent;
+  border-top: 85px solid var(--hex);
+  border-left: 85px solid transparent;
 }
 
 .a4-page > * { position:relative; z-index:2; }
@@ -359,7 +359,14 @@ tbody tr:hover td { background:var(--subtle); }
 .a4-sig-box { width: 45%; font-size: 9pt; color: #0f172a; display:flex; flex-direction:column; justify-content: space-between; }
 .a4-sig-for { line-height: 1.4; margin-bottom: 10px; flex-grow: 1; }
 .a4-sig-bottom { width: 100%; }
-
+/* New CSS for split signature lines */
+.a4-sig-row { display: flex; justify-content: space-between; gap: 15px; }
+.a4-sig-col { flex: 1; display: flex; flex-direction: column; text-align: center; justify-content: flex-end; }
+.a4-sig-col.date-col { flex: 0.7; }
+.a4-sig-space { height: 45px; display: flex; align-items: flex-end; justify-content: center; position:relative; }
+.a4-sig-space img { max-height: 50px; max-width: 120px; object-fit: contain; mix-blend-mode: multiply; position:absolute; bottom:2px; }
+.a4-sig-label { border-top: 1px solid #cbd5e1; padding-top: 6px; font-size: 9pt; }
+.a4-sig-date-val { margin-bottom: 4px; font-size: 9pt; color: #0f172a; }
 .a4-footer-sys { text-align: right; font-size: 7.5pt; color: #cbd5e1; margin-top:20px; }
 
 /* RESTORED FEATURES: Payment Page (QR) and Stamp */
@@ -456,7 +463,7 @@ tbody tr:hover td { background:var(--subtle); }
   /* แก้ไขการซูมในมือถือให้คำนวณระยะเว้นด้านล่างให้ถูกต้อง */
   .modal-pdf-body .a4-page { 
     transform: scale(0.35); 
-    transform-origin: top center; 
+    transform-origin: top left; 
     margin-bottom: calc(-297mm * 0.65 + 24px); 
   }
   .pub-page .a4-page {
@@ -488,13 +495,13 @@ tbody tr:hover td { background:var(--subtle); }
 
 /* ═══════════ PUBLIC VIEWER ═══════════ */
 .pub-page { background:#f1f5f9; min-height:100vh; padding:15px; display:flex; flex-direction:column; align-items:center; }
-.pub-toolbar { width:100%; max-width:210mm; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:16px 24px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; box-shadow:0 4px 15px rgba(0,0,0,.08); }
+.pub-toolbar { width:100%; max-width:210mm; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:12px 20px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; box-shadow:0 2px 10px rgba(0,0,0,.05); }
 .pub-brand { display:flex; align-items:center; gap:10px; }
-.pub-brand img { height:40px; max-width:140px; object-fit:contain; }
-.pub-brand-text { font-size:16px; font-weight:700; color:#0f172a; }
-.pub-actions { display:flex; gap:12px; align-items:center; }
-.pub-btn-primary { background:#0f172a; color:#fff; border:none; padding:12px 28px; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(15,23,42,0.2); }
-.pub-btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(15,23,42,0.3); }
+.pub-brand img { height:36px; max-width:120px; object-fit:contain; }
+.pub-brand-text { font-size:14px; font-weight:700; color:#0f172a; }
+.pub-actions { display:flex; gap:10px; align-items:center; }
+.pub-btn-primary { background:#0f172a; color:#fff; border:none; padding:10px 24px; border-radius:6px; font-size:14px; font-weight:600; cursor:pointer; transition:opacity .2s; display:flex; align-items:center; gap:6px; }
+.pub-btn-primary:hover { opacity:0.9; }
 
 .share-loading { display:flex; align-items:center; justify-content:center; min-height:100vh; background:#f1f5f9; }
 .share-loading-inner { color:#0f172a; font-family:'IBM Plex Sans Thai',sans-serif; font-size:16px; text-align:center; }
@@ -502,13 +509,12 @@ tbody tr:hover td { background:var(--subtle); }
 @keyframes spin { to { transform:rotate(360deg); } }
 
 @media (max-width:768px) {
-  .pub-toolbar { padding:16px; flex-direction:column; align-items:stretch; }
-  .pub-brand { justify-content:center; margin-bottom:12px; }
+  .pub-toolbar { padding:12px; flex-direction:column; align-items:stretch; }
+  .pub-brand { justify-content:center; margin-bottom:10px; }
   .pub-actions { justify-content:center; flex-direction:column; }
   .pub-btn-primary { width:100%; justify-content:center; padding:14px; font-size:15px; }
   .pub-page { padding:10px 0; }
   .pub-page .a4-wrapper { width:100%; overflow-x:auto; padding:0 10px; }
-  .pub-page .a4-page { transform:none; margin:0 auto; }
 }
 </style>
 
@@ -572,30 +578,10 @@ tbody tr:hover td { background:var(--subtle); }
 
 <script>
 /* ═══════════════════════════════════════
-   HELPERS (SAFE URL ENCODING & ESCAPING)
+   HELPERS
 ═══════════════════════════════════════ */
-// ป้องกันการพังจากการขึ้นบรรทัดใหม่ หรือค่าว่าง
-const esc = str => {
-  if (typeof str !== 'string') return str || '';
-  return str.replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;")
-            .replace(/\n/g, '<br>');
-};
-
-// เข้ารหัส Base64 URL Safe ที่ทำงานได้บนทุกอุปกรณ์ 100% ป้องกันลิงก์แชร์ลูกค้าพัง
-function packData(obj) {
-    const jsonStr = JSON.stringify(obj);
-    return encodeURIComponent(btoa(unescape(encodeURIComponent(jsonStr))));
-}
-
-function unpackData(encodedStr) {
-    const base64Str = decodeURIComponent(encodedStr);
-    return JSON.parse(decodeURIComponent(escape(atob(base64Str))));
-}
-
+const utoa = s => btoa(unescape(encodeURIComponent(s)));
+const atou = s => decodeURIComponent(escape(atob(s)));
 const money = n => Number(n).toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2});
 const genId = p => { const d = new Date(); return p + d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(Math.floor(Math.random()*1000)).padStart(3,'0'); };
 const todayStr = () => { const d = new Date(); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; };
@@ -661,14 +647,14 @@ const DEFAULT_DB = {
 
 let DB = (() => {
   try {
-    const raw = localStorage.getItem('bizflow_v39'); // Version update to guarantee clean DB load
+    const raw = localStorage.getItem('bizflow_v27');
     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_DB));
     const p = JSON.parse(raw);
     if (!p.settings.issuerName) p.settings.issuerName = DEFAULT_DB.settings.issuerName;
     return p;
   } catch { return JSON.parse(JSON.stringify(DEFAULT_DB)); }
 })();
-const saveDB = () => localStorage.setItem('bizflow_v39', JSON.stringify(DB));
+const saveDB = () => localStorage.setItem('bizflow_v27', JSON.stringify(DB));
 
 /* ═══════════════════════════════════════
    THEME
@@ -724,7 +710,7 @@ function customConfirm(msg, callback) {
   openModal(`
     <div class="modal-hdr"><span class="modal-hdr-title">⚠️ ยืนยัน</span><button class="modal-close" onclick="closeModal()">✕</button></div>
     <div class="modal-body" style="font-size:14px; text-align:center; padding: 30px 20px;">
-      ${esc(msg)}
+      ${msg.replace(/\n/g, '<br>')}
     </div>
     <div class="modal-ftr">
       <button class="btn btn-ghost" onclick="closeModal()">ยกเลิก</button>
@@ -732,6 +718,26 @@ function customConfirm(msg, callback) {
     </div>
   `);
   document.getElementById('confirm-btn').onclick = () => { closeModal(); callback(); };
+}
+
+function bahtText(amount) {
+  if (amount === 0) return '(ศูนย์บาทถ้วน)';
+  const t = ['','สิบ','ร้อย','พัน','หมื่น','แสน','ล้าน'];
+  const n = ['','หนึ่ง','สอง','สาม','สี่','ห้า','หก','เจ็ด','แปด','เก้า'];
+  const [baht, satang] = Math.abs(amount).toFixed(2).split('.');
+  function cvt(s) {
+    let r = '';
+    for (let i=0;i<s.length;i++) {
+      const d=+s[i], p=s.length-i-1;
+      if (!d) continue;
+      if (p===1&&d===1) r+='สิบ';
+      else if (p===1&&d===2) r+='ยี่สิบ';
+      else if (p===0&&d===1&&s.length>1&&s[s.length-2]!=='0') r+='เอ็ด';
+      else r+=n[d]+t[p];
+    }
+    return r;
+  }
+  return `(${amount<0?'ลบ':''}${cvt(baht)}บาท${satang==='00'?'ถ้วน':cvt(satang)+'สตางค์'})`;
 }
 
 /* ═══════════════════════════════════════
@@ -794,7 +800,7 @@ function renderDashboard() {
     const cus=getCusFromDoc(doc), m=DOC_META[doc.type];
     return `<tr onclick="previewDoc('${doc.id}')" style="cursor:pointer">
       <td><span class="badge ${m.bClass}" style="margin-right:6px">${doc.type}</span><span style="font-family:var(--font-mono);font-size:12.5px">${doc.id}</span></td>
-      <td><div style="font-weight:600">${esc(cus.name).split('<br>')[0]}</div><div style="font-size:11.5px;color:var(--text-3)">${doc.date}</div></td>
+      <td><div style="font-weight:600">${cus.name.split('\n')[0]}</div><div style="font-size:11.5px;color:var(--text-3)">${doc.date}</div></td>
       <td style="font-family:var(--font-mono);font-weight:600;white-space:nowrap">฿${money(doc.total)}</td>
       <td>${statusBadge(doc.status,doc.type)}</td></tr>`;
   }).join('')||`<tr><td colspan="4"><div class="empty"><span class="empty-icon">📂</span><div class="empty-text">ยังไม่มีเอกสาร</div></div></td></tr>`;
@@ -829,7 +835,7 @@ function renderDashboard() {
 function renderCustomers() {
   const rows = DB.customers.map(c=>`
     <tr>
-      <td><div style="font-weight:600">${esc(c.name).split('<br>')[0]}</div></td>
+      <td><div style="font-weight:600">${c.name.split('\n')[0]}</div></td>
       <td><div>${c.phone||'-'}</div><div style="font-size:11.5px;color:var(--text-3)">${c.email||'-'}</div></td>
       <td style="font-family:var(--font-mono);font-size:12.5px;color:var(--text-2)">${c.taxId||'-'}</td>
       <td><button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="delCustomer('${c.id}')">ลบ</button></td>
@@ -886,7 +892,7 @@ function renderProducts() {
   const rows = DB.products.map(p=>`
     <tr>
       <td style="font-family:var(--font-mono);color:var(--text-3);font-size:12px">${p.id}</td>
-      <td style="font-weight:500; white-space:pre-wrap;">${esc(p.name)}</td>
+      <td style="font-weight:500; white-space:pre-wrap;">${p.name}</td>
       <td style="font-family:var(--font-mono);font-weight:600;color:var(--accent-h)">฿${money(p.price)}</td>
       <td><button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="delProduct('${p.id}')">ลบ</button></td>
     </tr>`).join('')||`<tr><td colspan="4"><div class="empty"><span class="empty-icon">📦</span><div class="empty-text">ยังไม่มีสินค้า</div></div></td></tr>`;
@@ -933,7 +939,7 @@ function renderDocList(type) {
     const cus=getCusFromDoc(doc);
     return `<tr>
       <td style="font-family:var(--font-mono);font-size:12.5px;color:${m.hex};cursor:pointer;font-weight:600" onclick="previewDoc('${doc.id}')">${doc.id}</td>
-      <td><div style="font-weight:600">${esc(cus.name).split('<br>')[0]}</div></td>
+      <td><div style="font-weight:600">${cus.name.split('\n')[0]}</div></td>
       <td style="color:var(--text-2);font-size:12.5px">${doc.date}</td>
       <td style="font-family:var(--font-mono);font-weight:600">฿${money(doc.total)}</td>
       <td>${statusBadge(doc.status,type)}</td>
@@ -962,7 +968,7 @@ function renderPayments() {
     const cus=getCusFromDoc(inv);
     return `<tr>
       <td style="font-family:var(--font-mono);font-size:12.5px;color:var(--accent-h);font-weight:600">${inv.id}</td>
-      <td style="font-weight:600">${esc(cus.name).split('<br>')[0]}</div></td>
+      <td style="font-weight:600">${cus.name.split('\n')[0]}</div></td>
       <td style="color:var(--red);font-size:12.5px">${inv.due}</td>
       <td style="font-family:var(--font-mono);font-weight:700">฿${money(inv.total)}</td>
       <td><button class="btn btn-success btn-sm" onclick="processPayment('${inv.id}')">💸 รับชำระเงิน</button></td></tr>`;
@@ -979,7 +985,7 @@ function renderPayments() {
 function processPayment(invId) {
   const inv=DB.documents.find(d=>d.id===invId); if(!inv)return;
   const cus=getCusFromDoc(inv);
-  customConfirm(`ยืนยันการรับชำระเงินจำนวน ฿${money(inv.total)} จาก\n${esc(cus.name).split('<br>')[0]} ใช่หรือไม่?`, () => {
+  customConfirm(`ยืนยันการรับชำระเงินจำนวน ฿${money(inv.total)} จาก\n${cus.name.split('\n')[0]} ใช่หรือไม่?`, () => {
     inv.status='paid';
     const re={...JSON.parse(JSON.stringify(inv)),id:genId('RE'),type:'RE',status:'paid',date:todayStr()};
     DB.documents.push(re); saveDB(); toast(`รับชำระแล้ว ออกใบเสร็จ ${re.id}`); setPage('docs-RE');
@@ -1005,12 +1011,12 @@ function pickCusById(id) {
 
 function renderCusCombo() {
   const opts=DB.customers.map(c=>`<div class="cus-opt" onclick="pickCusById('${c.id}')">
-    ${esc(c.name).split('<br>')[0]}${c.phone?`<span style="color:var(--text-3);font-size:11.5px;margin-left:8px">${c.phone}</span>`:''}
+    ${c.name.split('\n')[0]}${c.phone?`<span style="color:var(--text-3);font-size:11.5px;margin-left:8px">${c.phone}</span>`:''}
   </div>`).join('');
   return `<div class="cus-combo">
     <input id="cus-combo-inp" class="cus-combo-input" autocomplete="off"
       placeholder="พิมพ์ชื่อลูกค้า หรือเลือกจากรายการ..."
-      value="${esc(draft.customerName).split('<br>')[0]}"
+      value="${draft.customerName.split('\n')[0].replace(/"/g,'&quot;')}"
       oninput="onCusInput(this.value)"
       onfocus="openCusDrop()"
       onblur="setTimeout(closeCusDrop,200)">
@@ -1126,7 +1132,7 @@ function renderItems() {
       <div class="ln-desc">
         <select class="form-control" style="margin-bottom:6px" onchange="pickProduct(${i},this.value)">
           <option value="">— เลือกจากรายการสินค้า —</option>
-          ${DB.products.map(p=>`<option value="${p.id}" ${it.productId===p.id?'selected':''}>${esc(p.name).split('<br>')[0]}</option>`).join('')}
+          ${DB.products.map(p=>`<option value="${p.id}" ${it.productId===p.id?'selected':''}>${p.name.split('\n')[0]}</option>`).join('')}
         </select>
         <textarea class="form-control" placeholder="พิมพ์รายละเอียดสินค้า / บริการ" rows="2" oninput="draft.items[${i}].name=this.value">${it.name}</textarea>
       </div>
@@ -1174,7 +1180,7 @@ function previewDraft() {
   const name=(document.getElementById('cus-combo-inp')||{}).value||draft.customerName;
   if(!name) return toast('กรุณาระบุชื่อลูกค้าก่อน', 'warn');
   draft.customerName=name;
-  const items=(draft.items||[]).filter(i=>i.name&&i.price>0);
+  const items=draft.items.filter(i=>i.name&&i.price>0);
   if(!items.length) return toast('กรุณาเพิ่มรายการสินค้าอย่างน้อย 1 รายการ', 'warn');
   openDocPreview({...JSON.parse(JSON.stringify(draft)),id:'PREVIEW',items,isDraft:true});
 }
@@ -1186,7 +1192,7 @@ function saveDraft() {
   draft.customerPhone=(document.getElementById('cus-phone')||{}).value||draft.customerPhone;
   draft.customerTaxId=(document.getElementById('cus-taxid')||{}).value||draft.customerTaxId;
   draft.customerAddress=(document.getElementById('cus-address')||{}).value||draft.customerAddress;
-  const items=(draft.items||[]).filter(i=>i.name&&i.price>0);
+  const items=draft.items.filter(i=>i.name&&i.price>0);
   if(!items.length) return toast('กรุณาเพิ่มรายการอย่างน้อย 1 รายการ', 'warn');
   const statusMap={QT:'sent',INV:'unpaid',BL:'sent',RE:'paid'};
   const doc={...JSON.parse(JSON.stringify(draft)),id:genId(draft.type),items,status:statusMap[draft.type]};
@@ -1196,30 +1202,20 @@ function saveDraft() {
 function delDoc(id) { customConfirm('คุณต้องการลบเอกสารนี้ถาวรใช่หรือไม่?', () => { const type=DB.documents.find(d=>d.id===id)?.type; DB.documents=DB.documents.filter(d=>d.id!==id); saveDB(); setPage(`docs-${type}`); }); }
 
 /* ═══════════════════════════════════════
-   A4 RENDERER (SAFE STRINGS & SECURE LAYOUT)
+   A4 RENDERER (FLOWACCOUNT STYLE 100% + FULL FEATURES)
 ═══════════════════════════════════════ */
 function genA4HTML(doc, customCus, customComp) {
   const m = DOC_META[doc.type];
   const cus  = customCus  || getCusFromDoc(doc);
   const comp = customComp || DB.settings;
+
   const hex = m.hex;
 
-  // Safe strings Protection - ป้องกันบั๊กหน้าจอมืด
-  const safeCusName = esc(cus.name);
-  const safeCusTaxId = cus.taxId && cus.taxId !== '-' ? `TAX ID<br>เลขประจำตัวผู้เสียภาษี<br>${esc(cus.taxId)}<br>` : '';
-  const safeCusAddress = cus.address ? `${esc(cus.address)}<br>` : '';
-  const safeCusPhone = cus.phone && cus.phone !== '-' ? `โทร. ${esc(cus.phone)}` : '';
-  
-  const safeCompName = esc(comp.companyName);
-  const safeCompAddress = comp.address ? esc(comp.address)+'<br>' : '';
-  const safeCompTaxId = comp.taxId ? 'เลขประจำตัวผู้เสียภาษี '+esc(comp.taxId)+'<br>' : '';
-  const safeCompPhone = comp.phone && comp.phone !== '-' ? 'โทร. '+esc(comp.phone) : '';
-  const safeIssuer = esc(comp.issuerName) || safeCompName;
-
   const logoHtml = comp.logo ? `<img src="${comp.logo}" class="a4-logo">` : `<div style="height:20px"></div>`;
-  const sigHtml = comp.signature ? `<img src="${comp.signature}" style="max-height: 45px; max-width: 100px; object-fit: contain; mix-blend-mode: multiply; position:absolute; bottom:2px;">` : ``;
+  const sigHtml = comp.signature ? `<img src="${comp.signature}">` : ``;
   
   const whtText = doc.whtRate > 0 ? `${doc.whtRate}%` : 'ไม่หัก';
+
   const stamp = (doc.type==='RE' || doc.status==='paid') ? `<div class="a4-stamp">PAID ✓</div>` : '';
 
   const showPayPage = (doc.type==='QT'||doc.type==='INV'||doc.type==='BL') && doc.status!=='paid';
@@ -1227,10 +1223,10 @@ function genA4HTML(doc, customCus, customComp) {
       ? `<img src="${comp.qrCode}" class="a4-qr-img">`
       : `<div class="a4-qr-placeholder"><svg viewBox="0 0 24 24" width="46" height="46"><path fill="#94a3b8" d="M3 3h8v8H3zm2 2v4h4V5zm8-2h8v8h-8zm2 2v4h4V5zM3 13h8v8H3zm2 2v4h4v-4zm13 2h2v2h-2zm-3-4h2v2h-2zm2 2h2v2h-2zm-2 2h2v2h-2zm3 2h2v2h-2zm2-6h2v2h-2zm-2 2h2v2h-2z"/></svg></div>`;
 
-  const itemRows = (doc.items||[]).map((it,i) => `
+  const itemRows = doc.items.map((it,i) => `
     <tr>
       <td style="text-align:center">${i+1}</td>
-      <td>${esc(it.name)}</td>
+      <td>${it.name.replace(/\n/g,'<br>')}</td>
       <td style="text-align:center">${it.qty}</td>
       <td style="text-align:right">${money(it.price)}</td>
       <td style="text-align:right">${it.discount>0 ? money(it.discount)+' ฿' : '0.0 ฿'}</td>
@@ -1242,19 +1238,19 @@ function genA4HTML(doc, customCus, customComp) {
   <div class="a4-page">
     ${stamp}
     <!-- Ribbon top right (WITH SHADOW, NO TEXT) -->
-    <div class="a4-corner">
-      <div class="a4-corner-triangle" style="border-top-color: ${hex};"></div>
+    <div class="a4-corner" style="position:absolute; top:0; right:0; z-index:10; filter: drop-shadow(-3px 3px 5px rgba(0,0,0,0.15));">
+      <div style="width:0; height:0; border-top: 85px solid ${hex}; border-left: 85px solid transparent;"></div>
     </div>
 
     <!-- Header Section -->
     <div class="a4-header">
       <div class="a4-header-l">
         ${logoHtml}
-        <div class="a4-company">${safeCompName}</div>
+        <div class="a4-company">${comp.companyName}</div>
         <div class="a4-address">
-          ${safeCompAddress}
-          ${safeCompTaxId}
-          ${safeCompPhone}
+          ${comp.address ? comp.address.replace(/\n/g,'<br>')+'<br>' : ''}
+          ${comp.taxId ? 'เลขประจำตัวผู้เสียภาษี '+comp.taxId+'<br>' : ''}
+          ${comp.phone ? 'โทร. '+comp.phone : ''}
         </div>
       </div>
       <div class="a4-header-r">
@@ -1263,19 +1259,19 @@ function genA4HTML(doc, customCus, customComp) {
           <div class="a4-doc-copy" style="color:${hex}">ต้นฉบับ</div>
         </div>
         
-        <!-- ข้อมูลเลขที่ วันที่ ผู้ขาย เป็นสีดำ ชิดกัน 100% -->
+        <!-- กลับมาใช้ Inline Style แข็งๆ เพื่อรับประกันว่าสีดำและชิดกันแน่นอน 100% -->
         <div style="border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; padding: 6px 0; margin-top: 8px;">
           <div style="display: flex; justify-content: space-between; font-size: 10pt; color: #000; line-height: 1.4; margin-bottom: 2px;">
-            <span style="font-weight: 700; width: 60px; text-align: left;">เลขที่</span>
-            <span style="text-align: right;">${doc.id}</span>
+            <div style="font-weight: 700; width: 60px; text-align: left;">เลขที่</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; text-align: right;">${doc.id}</div>
           </div>
           <div style="display: flex; justify-content: space-between; font-size: 10pt; color: #000; line-height: 1.4; margin-bottom: 2px;">
-            <span style="font-weight: 700; width: 60px; text-align: left;">วันที่</span>
-            <span style="text-align: right;">${doc.date}</span>
+            <div style="font-weight: 700; width: 60px; text-align: left;">วันที่</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; text-align: right;">${doc.date}</div>
           </div>
           <div style="display: flex; justify-content: space-between; font-size: 10pt; color: #000; line-height: 1.4;">
-            <span style="font-weight: 700; width: 60px; text-align: left;">ผู้ขาย</span>
-            <span style="text-align: right;">${safeIssuer}</span>
+            <div style="font-weight: 700; width: 60px; text-align: left;">ผู้ขาย</div>
+            <div style="text-align: right;">${comp.issuerName||comp.companyName}</div>
           </div>
         </div>
         
@@ -1285,11 +1281,11 @@ function genA4HTML(doc, customCus, customComp) {
     <!-- Customer Section -->
     <div class="a4-to">
       <div class="a4-to-label" style="color:${hex}">ลูกค้า</div>
-      <div class="a4-to-name">${safeCusName.split('<br>')[0]}</div>
+      <div class="a4-to-name">${cus.name.replace(/\n/g,'<br>')}</div>
       <div class="a4-to-detail">
-        ${safeCusTaxId}
-        ${safeCusAddress}
-        ${safeCusPhone}
+        ${cus.taxId && cus.taxId !== '-' ? `TAX ID<br>เลขประจำตัวผู้เสียภาษี<br>${cus.taxId}<br>` : ''}
+        ${cus.address ? `${cus.address.replace(/\n/g,'<br>')}<br>` : ''}
+        ${cus.phone && cus.phone !== '-' ? `โทร. ${cus.phone}` : ''}
       </div>
     </div>
 
@@ -1341,48 +1337,42 @@ function genA4HTML(doc, customCus, customComp) {
 
     <div style="flex-grow:1"></div>
 
-    <!-- Signatures: ลายเซ็น/วันที่ลอยอยู่บนเส้นแยก 2 เส้น คำว่า ผู้รับเงิน/วันที่ อยู่ข้างล่าง -->
+    <!-- Signatures -->
     <div class="a4-sigs">
       <!-- Customer Signature (Left) -->
       <div class="a4-sig-box">
         <div class="a4-sig-for">
-          ในนาม ${safeCusName.split('<br>')[0]}<br>
-          ${safeCusTaxId}
+          ในนาม ${cus.name.replace(/\n/g,'<br>')}<br>
+          ${cus.taxId && cus.taxId !== '-' ? `TAX ID<br>เลขประจำตัวผู้เสียภาษี<br>${cus.taxId}<br>` : ''}
+          ${cus.address ? `${cus.address.replace(/\n/g,'<br>')}<br>` : ''}
+          ${cus.phone && cus.phone !== '-' ? `โทร. ${cus.phone}` : ''}
         </div>
         <div class="a4-sig-bottom">
-          <!-- แยกเป็น 2 กล่อง -->
-          <div style="display: flex; justify-content: space-between; gap: 20px;">
-             <div style="flex:1; text-align:center;">
-                <div style="height:45px;"></div>
-                <div style="border-top:1px solid #cbd5e1; padding-top:8px;">ผู้จ่ายเงิน</div>
-             </div>
-             <div style="flex:1; text-align:center;">
-                <div style="height:45px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:5px; color:#0f172a;">
-                  <!-- เว้นว่างให้ลูกค้าเขียน -->
-                </div>
-                <div style="border-top:1px solid #cbd5e1; padding-top:8px;">วันที่</div>
-             </div>
+          <div class="a4-sig-row">
+            <div class="a4-sig-col">
+              <div class="a4-sig-space"></div>
+              <div class="a4-sig-label">ผู้จ่ายเงิน</div>
+            </div>
+            <div class="a4-sig-col date-col">
+              <div class="a4-sig-space"></div>
+              <div class="a4-sig-label">วันที่</div>
+            </div>
           </div>
         </div>
       </div>
       <!-- Issuer Signature (Right) -->
       <div class="a4-sig-box">
-        <div class="a4-sig-for" style="text-align:right;">ในนาม ${safeCompName}</div>
+        <div class="a4-sig-for" style="text-align:right;">ในนาม ${comp.companyName}</div>
         <div class="a4-sig-bottom">
-          <!-- แยกเป็น 2 กล่อง พร้อมวันที่ปัจจุบันลอยอยู่บนเส้น -->
-          <div style="display: flex; justify-content: space-between; gap: 20px;">
-             <div style="flex:1; text-align:center; position:relative;">
-                <div style="height:45px; display:flex; align-items:flex-end; justify-content:center;">
-                  ${sigHtml}
-                </div>
-                <div style="border-top:1px solid #cbd5e1; padding-top:8px;">ผู้รับเงิน</div>
-             </div>
-             <div style="flex:1; text-align:center;">
-                <div style="height:45px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:5px; color:#0f172a; font-family:'IBM Plex Mono',monospace;">
-                  ${todayStr()}
-                </div>
-                <div style="border-top:1px solid #cbd5e1; padding-top:8px;">วันที่</div>
-             </div>
+          <div class="a4-sig-row">
+            <div class="a4-sig-col">
+              <div class="a4-sig-space">${sigHtml}</div>
+              <div class="a4-sig-label">ผู้รับเงิน</div>
+            </div>
+            <div class="a4-sig-col date-col">
+              <div class="a4-sig-space"><div class="a4-sig-date-val">${doc.date}</div></div>
+              <div class="a4-sig-label">วันที่</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1391,11 +1381,11 @@ function genA4HTML(doc, customCus, customComp) {
     <div class="a4-footer-sys"><strong>AI BUSINESS & LINE OA AUTOMATION</strong></div>
   </div>`;
 
-  // PAGE 2 (Bank / QR) - แยกหน้าโดยสมบูรณ์
+  // RESTORED: PAGE 2 (Bank / QR)
   const page2 = showPayPage ? `
   <div class="a4-page">
-    <div class="a4-corner">
-      <div class="a4-corner-triangle" style="border-top-color: ${hex};"></div>
+    <div class="a4-corner" style="position:absolute; top:0; right:0; z-index:10; filter: drop-shadow(-3px 3px 5px rgba(0,0,0,0.15));">
+      <div style="width:0; height:0; border-top: 85px solid ${hex}; border-left: 85px solid transparent;"></div>
     </div>
     <div class="a4-header" style="margin-bottom:0">
       <div class="a4-header-l">${logoHtml}</div>
@@ -1403,17 +1393,17 @@ function genA4HTML(doc, customCus, customComp) {
     </div>
     <div style="border-top:1px solid #cbd5e1; margin: 14px 0;"></div>
     <div style="font-size:10.5pt;color:#475569;margin-bottom:20px">
-      <div style="font-weight:700;color:#0f172a;font-size:12pt;margin-bottom:2px">${safeCompName}</div>
-      เลขผู้เสียภาษี ${esc(comp.taxId) || '-'}
+      <div style="font-weight:700;color:#0f172a;font-size:12pt;margin-bottom:2px">${comp.companyName}</div>
+      เลขผู้เสียภาษี ${comp.taxId}
     </div>
     <div class="a4-payment-section">
       <div class="a4-payment-title">🏦 โอนเงินผ่านธนาคาร</div>
       <div class="a4-bank-card">
         <div class="a4-bank-logo-circle">B</div>
         <div class="a4-bank-info">
-          <div class="a4-bank-acc">${esc(comp.bankAcc) || '-'}</div>
-          <div class="a4-bank-name-line">${esc(comp.bankName) || '-'} — ${esc(comp.bankBranch) || '-'}</div>
-          <div class="a4-bank-name-line" style="margin-top:3px">ชื่อบัญชี: <strong style="color:#0f172a">${esc(comp.bankOwner) || '-'}</strong></div>
+          <div class="a4-bank-acc">${comp.bankAcc}</div>
+          <div class="a4-bank-name-line">${comp.bankName} — ${comp.bankBranch}</div>
+          <div class="a4-bank-name-line" style="margin-top:3px">ชื่อบัญชี: <strong style="color:#0f172a">${comp.bankOwner}</strong></div>
         </div>
         <div class="a4-qr-wrap">${qrHtml}</div>
       </div>
@@ -1457,7 +1447,7 @@ function printDoc(id) {
 }
 
 /* ═══════════════════════════════════════
-   SHARE LINK (SAFE URL PAYLOAD SYSTEM 100% WORKING)
+   SHARE LINK (MODAL WITH CLICKABLE WEB LINK)
 ═══════════════════════════════════════ */
 function showShareModal(url) {
   openModal(`
@@ -1474,6 +1464,7 @@ function showShareModal(url) {
         <button class="btn btn-primary" onclick="copyShareUrl()" style="white-space:nowrap;">คัดลอกลิงก์</button>
       </div>
       <div style="border-top:1px solid var(--border); padding-top:24px;">
+        <!-- ลิงก์ที่กดแล้วเปิดหน้าเว็บ Public ให้ลูกค้ากดพิมพ์ได้ทันที -->
         <a href="${url}" target="_blank" class="btn btn-success btn-lg" style="width:100%; display:flex; justify-content:center; gap:8px; text-decoration:none;">
           <span style="font-size:18px;">🌐</span> เปิดดูมุมมองลูกค้า (ทดสอบพิมพ์)
         </a>
@@ -1493,21 +1484,24 @@ function shareDoc(id) {
   const doc = DB.documents.find(d => d.id === id);
   if (!doc) return;
   const cus  = getCusFromDoc(doc);
-  const comp = { ...DB.settings, logo: '', signature: '', qrCode: '' }; // ลบรูปภาพขนาดใหญ่ออก เพื่อป้องกันลิงก์ยาวเกินไป
-  
+  const comp = { ...DB.settings, logo: '', signature: '', qrCode: '' }; // Strip images for URL safety
+  const shareId  = id.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const fsPayload = { doc, cus, comp: { ...comp, logo: DB.settings.logo||'', signature: DB.settings.signature||'', qrCode: DB.settings.qrCode||'' }, createdAt: Date.now() };
+
   toast('กำลังสร้างลิงก์...', 'warn');
 
+  // ใช้การสร้าง Base64 URL เป็นหลัก รับประกันว่าเปิดได้ทันทีโดยไม่ต้องพึ่ง Database
   setTimeout(() => {
-    try {
-      const baseUrl = window.location.href.split('?')[0].split('#')[0];
-      const payloadStr = packData({ doc, cus, comp });
-      const url = `${baseUrl}?pub=${payloadStr}`;
-      showShareModal(url);
-    } catch(e) { 
-      console.error(e);
-      toast('ไม่สามารถสร้างลิงก์ได้ กรุณาใช้ปุ่มพิมพ์แทน', 'warn'); 
-    }
+    fallbackShare(doc, cus, comp);
   }, 300);
+}
+
+function fallbackShare(doc, cus, comp) {
+  try {
+    const baseUrl = window.location.href.split('?')[0].split('#')[0];
+    const url = `${baseUrl}?pub=${utoa(JSON.stringify({ doc, cus, comp }))}`;
+    showShareModal(url);
+  } catch(e) { toast('ไม่สามารถสร้างลิงก์ได้ กรุณาใช้ปุ่มพิมพ์แทน', 'warn'); }
 }
 
 /* ═══════════════════════════════════════
@@ -1521,7 +1515,7 @@ function renderReports() {
     <tr>
       <td>${DOC_META[d.type].title}</td>
       <td style="font-family:var(--font-mono);font-size:12px">${d.id}</td>
-      <td>${esc(getCusFromDoc(d).name).split('<br>')[0]}</td>
+      <td>${getCusFromDoc(d).name.split('\n')[0]}</td>
       <td>${d.date}</td>
       <td style="font-family:var(--font-mono);font-weight:600">฿${money(d.total)}</td>
       <td>${statusBadge(d.status,d.type)}</td>
@@ -1646,7 +1640,7 @@ function showPublicViewer(data) {
   const loading = document.getElementById('share-loading');
   if (loading) loading.remove();
 
-  const brandHtml = comp.logo ? `<img src="${comp.logo}">` : `<div class="pub-brand-text">${esc(comp.companyName)}</div>`;
+  const brandHtml = comp.logo ? `<img src="${comp.logo}">` : `<div class="pub-brand-text">${comp.companyName}</div>`;
   const actionHtml = doc.status === 'unpaid' 
     ? `<button class="pub-btn-primary" onclick="window.print()" style="background:#14b8a6; color:#fff; font-size:16px; padding:14px 28px; box-shadow:0 4px 12px rgba(20,184,166,0.3); border-radius:8px;">🖨️ พิมพ์ / ดาวน์โหลด PDF</button>` 
     : `<div style="display:flex; align-items:center; gap:15px;"><div style="color:#22c55e;font-weight:700;font-size:15px; background:#f0fdf4; padding:8px 16px; border-radius:8px; border:1px solid #bbf7d0;">ชำระเงินแล้ว ✓</div><button class="pub-btn-primary" onclick="window.print()" style="background:#0f172a; color:#fff;">🖨️ พิมพ์เอกสาร</button></div>`;
@@ -1664,16 +1658,17 @@ function showPublicViewer(data) {
 }
 
 /* ─── Detect share/pub params ─── */
-const _pub = new URLSearchParams(location.search).get('pub');
+const _shareId = new URLSearchParams(location.search).get('share');
+const _pub     = new URLSearchParams(location.search).get('pub');
 
-if (_pub) {
-  try { 
-    const data = unpackData(_pub);
-    showPublicViewer(data); 
-  } catch(e) { 
-    console.error("Public Link Decode Error:", e);
-    document.body.innerHTML = `<div style="padding:60px;text-align:center;font-family:'IBM Plex Sans Thai',sans-serif;color:#666"><h2>⚠️ ลิงก์ไม่ถูกต้อง</h2><p>กรุณาติดต่อผู้ส่งเอกสารใหม่อีกครั้ง</p></div>`; 
-  }
+if (_shareId) {
+  document.getElementById('app-root').style.display = 'none';
+  document.body.insertAdjacentHTML('beforeend', `<div class="share-loading" id="share-loading"> <div class="share-loading-inner"> <div class="share-loading-spinner"></div> <div>กำลังโหลดเอกสาร...</div> </div> </div>`);
+  if (db !== null) {
+    db.collection('shared_docs').doc(_shareId).get().then(snap => { showPublicViewer(snap.exists ? snap.data() : null); }).catch(err => { console.error('Firestore load error:', err); showPublicViewer(null); });
+  } else { showPublicViewer(null); }
+} else if (_pub) {
+  try { showPublicViewer(JSON.parse(atou(_pub))); } catch { document.body.innerHTML = `<div style="padding:60px;text-align:center;font-family:'IBM Plex Sans Thai',sans-serif;color:#666"><h2>⚠️ ลิงก์ไม่ถูกต้อง</h2><p>กรุณาติดต่อผู้ส่งเอกสาร</p></div>`; }
 } else { setPage('dashboard'); }
 </script>
 
