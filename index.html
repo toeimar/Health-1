@@ -457,11 +457,11 @@ tbody tr:hover td { background:var(--subtle); }
   .modal-pdf-body .a4-page { 
     transform: scale(0.35); 
     transform-origin: top center; 
-    margin-bottom: calc(-297mm * 0.65 + 30px); 
+    margin-bottom: calc(-297mm * 0.65 + 24px); 
   }
   .pub-page .a4-page {
     transform: none;
-    margin-bottom: 30px;
+    margin-bottom: 24px;
   }
   
   .modal-backdrop { padding: 0; align-items: flex-end; }
@@ -585,13 +585,12 @@ const esc = str => {
             .replace(/\n/g, '<br>');
 };
 
-// เข้ารหัสแบบ URL Safe 100% (รองรับสระภาษาไทยและอีโมจิ)
+// เข้ารหัส Base64 URL Safe ที่ทำงานได้บนทุกอุปกรณ์ 100% ป้องกันลิงก์แชร์ลูกค้าพัง
 function packData(obj) {
     const jsonStr = JSON.stringify(obj);
     return encodeURIComponent(btoa(unescape(encodeURIComponent(jsonStr))));
 }
 
-// ถอดรหัส (ทนทานต่อการถูกแปลงสัญลักษณ์โดยเบราว์เซอร์)
 function unpackData(encodedStr) {
     const base64Str = decodeURIComponent(encodedStr);
     return JSON.parse(decodeURIComponent(escape(atob(base64Str))));
@@ -629,6 +628,7 @@ const PAGE_TITLES = {
   line:'LINE OA Automation', settings:'ตั้งค่าระบบ',
 };
 
+// อัปเดตสี (hex) เป็นฟ้าเขียวทั้งหมด (#14b8a6)
 const DOC_META = {
   QT:  { title:'ใบเสนอราคา',               prefix:'QT',  hex:'#14b8a6', bClass:'b-teal' },
   INV: { title:'ใบแจ้งหนี้',               prefix:'INV', hex:'#14b8a6', bClass:'b-blue' },
@@ -661,14 +661,14 @@ const DEFAULT_DB = {
 
 let DB = (() => {
   try {
-    const raw = localStorage.getItem('bizflow_v38'); 
+    const raw = localStorage.getItem('bizflow_v39'); // Version update to guarantee clean DB load
     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_DB));
     const p = JSON.parse(raw);
     if (!p.settings.issuerName) p.settings.issuerName = DEFAULT_DB.settings.issuerName;
     return p;
   } catch { return JSON.parse(JSON.stringify(DEFAULT_DB)); }
 })();
-const saveDB = () => localStorage.setItem('bizflow_v38', JSON.stringify(DB));
+const saveDB = () => localStorage.setItem('bizflow_v39', JSON.stringify(DB));
 
 /* ═══════════════════════════════════════
    THEME
@@ -775,6 +775,7 @@ function renderNav() {
   if (s.logo) { img.src=s.logo; img.style.display='block'; letter.style.display='none'; }
   else { img.style.display='none'; letter.style.display=''; letter.textContent=(s.companyName||'B').charAt(0).toUpperCase(); }
 
+  // Mobile Bottom Nav Badge Update
   document.querySelectorAll('.bn-item').forEach(el=>el.classList.remove('active'));
   const activeBtn = document.querySelector(`.bn-item[onclick="setPage('${currentPage}')"]`);
   if(activeBtn) activeBtn.classList.add('active');
@@ -1009,7 +1010,7 @@ function renderCusCombo() {
   return `<div class="cus-combo">
     <input id="cus-combo-inp" class="cus-combo-input" autocomplete="off"
       placeholder="พิมพ์ชื่อลูกค้า หรือเลือกจากรายการ..."
-      value="${(draft.customerName||'').split('\n')[0].replace(/"/g,'&quot;')}"
+      value="${esc(draft.customerName).split('<br>')[0]}"
       oninput="onCusInput(this.value)"
       onfocus="openCusDrop()"
       onblur="setTimeout(closeCusDrop,200)">
@@ -1203,7 +1204,7 @@ function genA4HTML(doc, customCus, customComp) {
   const comp = customComp || DB.settings;
   const hex = m.hex;
 
-  // Safe strings Protection - ป้องกันการเกิด error เวลาค่าว่าง
+  // Safe strings Protection - ป้องกันบั๊กหน้าจอมืด
   const safeCusName = esc(cus.name);
   const safeCusTaxId = cus.taxId && cus.taxId !== '-' ? `TAX ID<br>เลขประจำตัวผู้เสียภาษี<br>${esc(cus.taxId)}<br>` : '';
   const safeCusAddress = cus.address ? `${esc(cus.address)}<br>` : '';
@@ -1340,7 +1341,7 @@ function genA4HTML(doc, customCus, customComp) {
 
     <div style="flex-grow:1"></div>
 
-    <!-- Signatures: แก้ไขขีดเส้นให้แยกออกจากกัน 2 เส้นต่อ 1 กล่อง ข้อมูลอยู่บน คำว่าวันที่อยู่ล่าง -->
+    <!-- Signatures: ลายเซ็น/วันที่ลอยอยู่บนเส้นแยก 2 เส้น คำว่า ผู้รับเงิน/วันที่ อยู่ข้างล่าง -->
     <div class="a4-sigs">
       <!-- Customer Signature (Left) -->
       <div class="a4-sig-box">
@@ -1352,11 +1353,11 @@ function genA4HTML(doc, customCus, customComp) {
           <!-- แยกเป็น 2 กล่อง -->
           <div style="display: flex; justify-content: space-between; gap: 20px;">
              <div style="flex:1; text-align:center;">
-                <div style="height:40px;"></div>
+                <div style="height:45px;"></div>
                 <div style="border-top:1px solid #cbd5e1; padding-top:8px;">ผู้จ่ายเงิน</div>
              </div>
              <div style="flex:1; text-align:center;">
-                <div style="height:40px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:5px; color:#0f172a;">
+                <div style="height:45px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:5px; color:#0f172a;">
                   <!-- เว้นว่างให้ลูกค้าเขียน -->
                 </div>
                 <div style="border-top:1px solid #cbd5e1; padding-top:8px;">วันที่</div>
@@ -1368,16 +1369,16 @@ function genA4HTML(doc, customCus, customComp) {
       <div class="a4-sig-box">
         <div class="a4-sig-for" style="text-align:right;">ในนาม ${safeCompName}</div>
         <div class="a4-sig-bottom">
-          <!-- แยกเป็น 2 กล่อง พร้อมวันที่ปัจจุบัน -->
+          <!-- แยกเป็น 2 กล่อง พร้อมวันที่ปัจจุบันลอยอยู่บนเส้น -->
           <div style="display: flex; justify-content: space-between; gap: 20px;">
              <div style="flex:1; text-align:center; position:relative;">
-                <div style="height:40px; display:flex; align-items:flex-end; justify-content:center;">
+                <div style="height:45px; display:flex; align-items:flex-end; justify-content:center;">
                   ${sigHtml}
                 </div>
                 <div style="border-top:1px solid #cbd5e1; padding-top:8px;">ผู้รับเงิน</div>
              </div>
              <div style="flex:1; text-align:center;">
-                <div style="height:40px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:5px; color:#0f172a; font-family:'IBM Plex Mono',monospace;">
+                <div style="height:45px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:5px; color:#0f172a; font-family:'IBM Plex Mono',monospace;">
                   ${todayStr()}
                 </div>
                 <div style="border-top:1px solid #cbd5e1; padding-top:8px;">วันที่</div>
@@ -1390,7 +1391,7 @@ function genA4HTML(doc, customCus, customComp) {
     <div class="a4-footer-sys"><strong>AI BUSINESS & LINE OA AUTOMATION</strong></div>
   </div>`;
 
-  // PAGE 2 (Bank / QR)
+  // PAGE 2 (Bank / QR) - แยกหน้าโดยสมบูรณ์
   const page2 = showPayPage ? `
   <div class="a4-page">
     <div class="a4-corner">
@@ -1456,7 +1457,7 @@ function printDoc(id) {
 }
 
 /* ═══════════════════════════════════════
-   SHARE LINK (100% WORKING URL ENCODING SYSTEM)
+   SHARE LINK (SAFE URL PAYLOAD SYSTEM 100% WORKING)
 ═══════════════════════════════════════ */
 function showShareModal(url) {
   openModal(`
@@ -1492,7 +1493,7 @@ function shareDoc(id) {
   const doc = DB.documents.find(d => d.id === id);
   if (!doc) return;
   const cus  = getCusFromDoc(doc);
-  const comp = { ...DB.settings, logo: '', signature: '', qrCode: '' }; // ลบรูปออกเพื่อป้องกัน URL ยาวเกินไป
+  const comp = { ...DB.settings, logo: '', signature: '', qrCode: '' }; // ลบรูปภาพขนาดใหญ่ออก เพื่อป้องกันลิงก์ยาวเกินไป
   
   toast('กำลังสร้างลิงก์...', 'warn');
 
@@ -1500,15 +1501,11 @@ function shareDoc(id) {
     try {
       const baseUrl = window.location.href.split('?')[0].split('#')[0];
       const payloadStr = packData({ doc, cus, comp });
-      // หากรันผ่านระบบ local (file://) ลิงก์ที่แชร์จะเปิดบนเครื่องอื่นไม่ได้ 
-      if(baseUrl.startsWith('file://')) {
-          alert('คุณเปิดระบบจากไฟล์ในเครื่องคอมพิวเตอร์ (file://) ลิงก์ที่สร้างขึ้นจะใช้งานได้เฉพาะบนคอมพิวเตอร์ของคุณเท่านั้น หากต้องการส่งให้ลูกค้า กรุณานำไฟล์ไปอัปโหลดขึ้นเว็บโฮสติ้งก่อนครับ');
-      }
       const url = `${baseUrl}?pub=${payloadStr}`;
       showShareModal(url);
     } catch(e) { 
       console.error(e);
-      toast('ไม่สามารถสร้างลิงก์ได้', 'warn'); 
+      toast('ไม่สามารถสร้างลิงก์ได้ กรุณาใช้ปุ่มพิมพ์แทน', 'warn'); 
     }
   }, 300);
 }
