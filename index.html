@@ -268,6 +268,7 @@ tbody tr:hover td { background:var(--subtle); }
 .a4-bg { background:#525659; }
 .a4-wrapper { width: 210mm; margin:0 auto; }
 
+/* เพิ่ม margin-bottom เพื่อไม่ให้หน้า 1 และหน้า 2 ติดกัน */
 .a4-page {
   width: 210mm;
   min-height: 297mm;
@@ -279,36 +280,27 @@ tbody tr:hover td { background:var(--subtle); }
   line-height: 1.5;
   position: relative;
   flex-shrink: 0;
-  box-shadow: 0 8px 30px rgba(0,0,0,.35);
+  box-shadow: 0 8px 30px rgba(0,0,0,.15);
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   overflow: hidden;
+  margin-bottom: 24px; /* แยกหน้ากระดาษออกจากกัน */
 }
 
-/* Ribbon Triangle Top Right (Drop shadow added) */
+/* Ribbon Triangle Top Right (Drop shadow added, TEXT REMOVED) */
 .a4-corner {
   position: absolute;
   top: 0;
   right: 0;
   z-index: 1;
-  filter: drop-shadow(-2px 2px 3px rgba(0,0,0,0.15));
+  filter: drop-shadow(-3px 3px 5px rgba(0,0,0,0.15));
 }
 .a4-corner-triangle {
   width: 0;
   height: 0;
-  border-top: 80px solid var(--hex);
-  border-left: 80px solid transparent;
-}
-.a4-corner-text {
-  position: absolute;
-  top: 12px;
-  right: 15px;
-  color: #fff;
-  font-size: 16pt;
-  font-weight: 700;
-  font-family: 'IBM Plex Sans Thai', sans-serif;
-  z-index: 2;
+  border-top: 85px solid var(--hex);
+  border-left: 85px solid transparent;
 }
 
 .a4-page > * { position:relative; z-index:2; }
@@ -463,7 +455,17 @@ tbody tr:hover td { background:var(--subtle); }
 
   .modal-pdf-body { padding: 10px 0; }
   .a4-wrapper { width: 100%; overflow-x: auto; padding: 0 10px; box-sizing:border-box; }
-  .modal-pdf-body .a4-page { transform: scale(0.35); transform-origin: top left; margin-bottom: calc((297mm * 0.35) - 297mm); }
+  
+  /* แก้ไขการซูมในมือถือให้คำนวณระยะเว้นด้านล่างให้ถูกต้อง */
+  .modal-pdf-body .a4-page { 
+    transform: scale(0.35); 
+    transform-origin: top left; 
+    margin-bottom: calc(-297mm * 0.65 + 24px); 
+  }
+  .pub-page .a4-page {
+    transform: none;
+    margin-bottom: 24px;
+  }
   
   .modal-backdrop { padding: 0; align-items: flex-end; }
   .modal-box { border-radius: 20px 20px 0 0; max-height: 94vh; max-width: 100%; width: 100%; }
@@ -488,14 +490,14 @@ tbody tr:hover td { background:var(--subtle); }
 }
 
 /* ═══════════ PUBLIC VIEWER ═══════════ */
-.pub-page { background:#f1f5f9; min-height:100vh; padding:15px; display:flex; flex-direction:column; align-items:center; }
-.pub-toolbar { width:100%; max-width:210mm; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:12px 20px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; box-shadow:0 2px 10px rgba(0,0,0,.05); }
+.pub-page { background:#f1f5f9; min-height:100vh; padding:20px; display:flex; flex-direction:column; align-items:center; }
+.pub-toolbar { width:100%; max-width:210mm; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:16px 24px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; box-shadow:0 4px 15px rgba(0,0,0,.08); }
 .pub-brand { display:flex; align-items:center; gap:10px; }
-.pub-brand img { height:36px; max-width:120px; object-fit:contain; }
-.pub-brand-text { font-size:14px; font-weight:700; color:#0f172a; }
-.pub-actions { display:flex; gap:10px; align-items:center; }
-.pub-btn-primary { background:#0f172a; color:#fff; border:none; padding:10px 24px; border-radius:6px; font-size:14px; font-weight:600; cursor:pointer; transition:opacity .2s; display:flex; align-items:center; gap:6px; }
-.pub-btn-primary:hover { opacity:0.9; }
+.pub-brand img { height:40px; max-width:140px; object-fit:contain; }
+.pub-brand-text { font-size:16px; font-weight:700; color:#0f172a; }
+.pub-actions { display:flex; gap:12px; align-items:center; }
+.pub-btn-primary { background:#14b8a6; color:#fff; border:none; padding:14px 28px; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(20,184,166,0.3); }
+.pub-btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(20,184,166,0.4); }
 
 .share-loading { display:flex; align-items:center; justify-content:center; min-height:100vh; background:#f1f5f9; }
 .share-loading-inner { color:#0f172a; font-family:'IBM Plex Sans Thai',sans-serif; font-size:16px; text-align:center; }
@@ -503,13 +505,12 @@ tbody tr:hover td { background:var(--subtle); }
 @keyframes spin { to { transform:rotate(360deg); } }
 
 @media (max-width:768px) {
-  .pub-toolbar { padding:12px; flex-direction:column; align-items:stretch; }
-  .pub-brand { justify-content:center; margin-bottom:10px; }
-  .pub-actions { justify-content:center; }
-  .pub-btn-primary { flex:1; justify-content:center; }
+  .pub-toolbar { padding:16px; flex-direction:column; align-items:stretch; }
+  .pub-brand { justify-content:center; margin-bottom:12px; }
+  .pub-actions { justify-content:center; flex-direction:column; }
+  .pub-btn-primary { width:100%; justify-content:center; padding:14px; font-size:15px; }
   .pub-page { padding:10px 0; }
   .pub-page .a4-wrapper { width:100%; overflow-x:auto; padding:0 10px; }
-  .pub-page .a4-page { transform:none; margin:0 auto; }
 }
 </style>
 
@@ -636,20 +637,20 @@ const DEFAULT_DB = {
     { id:'P001', name:'ออกแบบ Line OA Pro (ราคาเดิม)\n- สมัคร Line oa (กรณียังไม่มี)\n- ตกแต่งหน้าโปรไฟล์\n- ออกแบบริสเมนู + เซ็ต\n- ตั้งค่า Auto - reply\n- Rich Message\n- Card Message\n**แถมฟรี Rich Video (วิดีโอของทางร้านถ้ามี)', price:2200 },
   ],
   documents:[
-    { id:'INV202603180001', type:'RE', customerName:'บริษัท สถาพร พรีเมี่ยม คอนสตรัคชั่น จำกัด (สำนักงานใหญ่)\nSATAPON PREMIUM CONSTRUCTION CO. LTD.', customerId:'C001', customerPhone:'096-906-9256', customerTaxId:'010-556-816-842-2', customerAddress:'ที่อยู่ 151/18 ซอยพหลโยธิน 34\nแขวงเสนานิคม เขตจตุจักร กรุงเทพมหานคร', date:'18/03/2026', due:'', items:[{productId:'P001',name:'ออกแบบ Line OA Pro (ราคาเดิม)\n- สมัคร Line oa (กรณียังไม่มี)\n- ตกแต่งหน้าโปรไฟล์\n- ออกแบบริสเมนู + เซ็ต\n- ตั้งค่า Auto - reply\n- Rich Message\n- Card Message\n**แถมฟรี Rich Video (วิดีโอของทางร้านถ้ามี)',qty:1,price:2200,discount:0}], subtotal:2200, vatRate:0, vat:0, whtRate:0, wht:0, total:2200, status:'paid' }
+    { id:'INV202603180001', type:'INV', customerName:'บริษัท สถาพร พรีเมี่ยม คอนสตรัคชั่น จำกัด (สำนักงานใหญ่)\nSATAPON PREMIUM CONSTRUCTION CO. LTD.', customerId:'C001', customerPhone:'096-906-9256', customerTaxId:'010-556-816-842-2', customerAddress:'ที่อยู่ 151/18 ซอยพหลโยธิน 34\nแขวงเสนานิคม เขตจตุจักร กรุงเทพมหานคร', date:'18/03/2026', due:'25/03/2026', items:[{productId:'P001',name:'ออกแบบ Line OA Pro (ราคาเดิม)\n- สมัคร Line oa (กรณียังไม่มี)\n- ตกแต่งหน้าโปรไฟล์\n- ออกแบบริสเมนู + เซ็ต\n- ตั้งค่า Auto - reply\n- Rich Message\n- Card Message\n**แถมฟรี Rich Video (วิดีโอของทางร้านถ้ามี)',qty:1,price:2200,discount:0}], subtotal:2200, vatRate:0, vat:0, whtRate:0, wht:0, total:2200, status:'unpaid' }
   ]
 };
 
 let DB = (() => {
   try {
-    const raw = localStorage.getItem('bizflow_v23');
+    const raw = localStorage.getItem('bizflow_v26');
     if (!raw) return JSON.parse(JSON.stringify(DEFAULT_DB));
     const p = JSON.parse(raw);
     if (!p.settings.issuerName) p.settings.issuerName = DEFAULT_DB.settings.issuerName;
     return p;
   } catch { return JSON.parse(JSON.stringify(DEFAULT_DB)); }
 })();
-const saveDB = () => localStorage.setItem('bizflow_v23', JSON.stringify(DB));
+const saveDB = () => localStorage.setItem('bizflow_v26', JSON.stringify(DB));
 
 /* ═══════════════════════════════════════
    THEME
@@ -1213,6 +1214,7 @@ function genA4HTML(doc, customCus, customComp) {
 
   const stamp = (doc.type==='RE' || doc.status==='paid') ? `<div class="a4-stamp">PAID ✓</div>` : '';
 
+  // แสดงหน้า 2 ต่อเมื่อยังไม่จ่ายเงิน และเป็นเอกสารแจ้งหนี้ วางบิล หรือเสนอราคา
   const showPayPage = (doc.type==='QT'||doc.type==='INV'||doc.type==='BL') && doc.status!=='paid';
   const qrHtml = comp.qrCode
       ? `<img src="${comp.qrCode}" class="a4-qr-img">`
@@ -1232,10 +1234,9 @@ function genA4HTML(doc, customCus, customComp) {
   const page1 = `
   <div class="a4-page">
     ${stamp}
-    <!-- Ribbon top right (WITH SHADOW) -->
-    <div class="a4-corner">
-      <div class="a4-corner-triangle" style="border-top-color: ${hex};"></div>
-      <span class="a4-corner-text">1</span>
+    <!-- Ribbon top right (WITH SHADOW, NO NUMBER) -->
+    <div class="a4-corner" style="position:absolute; top:0; right:0; z-index:10; filter: drop-shadow(-3px 3px 5px rgba(0,0,0,0.15));">
+      <div style="width:0; height:0; border-top: 85px solid ${hex}; border-left: 85px solid transparent;"></div>
     </div>
 
     <!-- Header Section -->
@@ -1255,19 +1256,19 @@ function genA4HTML(doc, customCus, customComp) {
           <div class="a4-doc-copy" style="color:${hex}">ต้นฉบับ</div>
         </div>
         
-        <!-- กลับมาใช้ Inline Style แข็งๆ เพื่อรับประกันว่าสีดำและชิดกันแน่นอน 100% -->
-        <div style="border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; padding: 6px 0; margin-top: 8px;">
-          <div style="display: flex; justify-content: space-between; font-size: 10pt; color: #000; line-height: 1.4; margin-bottom: 2px;">
-            <div style="font-weight: 700; width: 60px; text-align: left;">เลขที่</div>
-            <div style="font-family: 'IBM Plex Mono', monospace; text-align: right;">${doc.id}</div>
+        <!-- โครงสร้าง Inline CSS แบบฝังทับ ป้องกันการเปลี่ยนสีและขยายบรรทัดจากระบบหลัก 100% -->
+        <div style="border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; padding: 6px 0; margin-top: 10px;">
+          <div style="display: flex; justify-content: space-between; font-size: 10pt; color: #000; margin-bottom: 3px; line-height: 1.2;">
+            <span style="font-weight: 700; width: 60px; text-align: left;">เลขที่</span>
+            <span style="text-align: right;">${doc.id}</span>
           </div>
-          <div style="display: flex; justify-content: space-between; font-size: 10pt; color: #000; line-height: 1.4; margin-bottom: 2px;">
-            <div style="font-weight: 700; width: 60px; text-align: left;">วันที่</div>
-            <div style="font-family: 'IBM Plex Mono', monospace; text-align: right;">${doc.date}</div>
+          <div style="display: flex; justify-content: space-between; font-size: 10pt; color: #000; margin-bottom: 3px; line-height: 1.2;">
+            <span style="font-weight: 700; width: 60px; text-align: left;">วันที่</span>
+            <span style="text-align: right;">${doc.date}</span>
           </div>
-          <div style="display: flex; justify-content: space-between; font-size: 10pt; color: #000; line-height: 1.4;">
-            <div style="font-weight: 700; width: 60px; text-align: left;">ผู้ขาย</div>
-            <div style="text-align: right;">${comp.issuerName||comp.companyName}</div>
+          <div style="display: flex; justify-content: space-between; font-size: 10pt; color: #000; line-height: 1.2;">
+            <span style="font-weight: 700; width: 60px; text-align: left;">ผู้ขาย</span>
+            <span style="text-align: right;">${comp.issuerName||comp.companyName}</span>
           </div>
         </div>
         
@@ -1287,7 +1288,7 @@ function genA4HTML(doc, customCus, customComp) {
 
     <!-- Items Table -->
     <table class="a4-table">
-      <thead>
+      <thead style="border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
         <tr>
           <th style="width:30px; text-align:center;">#</th>
           <th>รายละเอียด</th>
@@ -1370,9 +1371,9 @@ function genA4HTML(doc, customCus, customComp) {
   // RESTORED: PAGE 2 (Bank / QR)
   const page2 = showPayPage ? `
   <div class="a4-page">
-    <div class="a4-corner">
-      <div class="a4-corner-triangle" style="border-top-color: ${hex};"></div>
-      <span class="a4-corner-text">2</span>
+    <!-- Ribbon top right (WITH SHADOW, NO NUMBER) -->
+    <div class="a4-corner" style="position:absolute; top:0; right:0; z-index:10; filter: drop-shadow(-3px 3px 5px rgba(0,0,0,0.15));">
+      <div style="width:0; height:0; border-top: 85px solid ${hex}; border-left: 85px solid transparent;"></div>
     </div>
     <div class="a4-header" style="margin-bottom:0">
       <div class="a4-header-l">${logoHtml}</div>
@@ -1439,20 +1440,21 @@ function printDoc(id) {
 function showShareModal(url) {
   openModal(`
     <div class="modal-hdr">
-      <span class="modal-hdr-title">🔗 ลิงก์สำหรับส่งให้ลูกค้า</span>
+      <span class="modal-hdr-title" style="font-size:18px;">🔗 ลิงก์สำหรับส่งให้ลูกค้า</span>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
-    <div class="modal-body">
-      <p style="font-size:13.5px; color:var(--text-2); margin-bottom:15px;">
-        ส่งลิงก์ด้านล่างนี้ให้ลูกค้า เพื่อให้ลูกค้าเปิดดูเอกสารบนเว็บไซต์ได้ทันที (ไม่ต้องเข้าระบบ) และสามารถสั่งพิมพ์/บันทึก PDF ได้เลย
-      </p>
-      <div style="display:flex; gap:8px;">
-        <input type="text" class="form-control" value="${url}" id="share-url-input" readonly>
-        <button class="btn btn-primary" onclick="copyShareUrl()">คัดลอก</button>
+    <div class="modal-body" style="text-align:center; padding-top:10px;">
+      <div style="background:var(--green-s); color:var(--green); padding:12px; border-radius:8px; margin-bottom:24px; font-size:13.5px; font-weight:600; text-align:left;">
+        ✅ สร้างลิงก์สำเร็จ! <br><span style="font-weight:400; color:var(--text-2);">ลูกค้าเปิดดูเอกสารบนเว็บไซต์ได้ทันที (ไม่ต้องเข้าระบบ) และสามารถสั่งพิมพ์ได้เลย</span>
       </div>
-      <div style="margin-top:24px; text-align:center;">
-        <a href="${url}" target="_blank" class="btn btn-ghost" style="color:var(--accent-h); border-color:var(--accent);">
-          🌐 ทดสอบเปิดดูลิงก์
+      <div style="display:flex; gap:8px; margin-bottom:24px;">
+        <input type="text" class="form-control" value="${url}" id="share-url-input" readonly style="background:#fff; color:#000; font-family:monospace; font-size:12px;">
+        <button class="btn btn-primary" onclick="copyShareUrl()" style="white-space:nowrap;">คัดลอกลิงก์</button>
+      </div>
+      <div style="border-top:1px solid var(--border); padding-top:24px;">
+        <!-- ลิงก์ที่กดแล้วเปิดหน้าเว็บ Public ให้ลูกค้ากดพิมพ์ได้ทันที -->
+        <a href="${url}" target="_blank" class="btn btn-success btn-lg" style="width:100%; display:flex; justify-content:center; gap:8px; text-decoration:none;">
+          <span style="font-size:18px;">🌐</span> เปิดดูมุมมองลูกค้า (ทดสอบพิมพ์)
         </a>
       </div>
     </div>
@@ -1632,7 +1634,9 @@ function showPublicViewer(data) {
   if (loading) loading.remove();
 
   const brandHtml = comp.logo ? `<img src="${comp.logo}">` : `<div class="pub-brand-text">${comp.companyName}</div>`;
-  const actionHtml = doc.status === 'unpaid' ? `<button class="pub-btn-primary" onclick="window.print()" style="background:#14b8a6; color:#fff;">🖨️ พิมพ์ / ดาวน์โหลด PDF</button>` : `<div style="display:flex; align-items:center; gap:10px;"><div style="color:#22c55e;font-weight:700;font-size:14px;padding:0 10px;">ชำระเงินแล้ว ✓</div><button class="pub-btn-primary" onclick="window.print()" style="background:#14b8a6; color:#fff;">🖨️ พิมพ์เอกสาร</button></div>`;
+  const actionHtml = doc.status === 'unpaid' 
+    ? `<button class="pub-btn-primary" onclick="window.print()" style="background:#14b8a6; color:#fff; font-size:16px; padding:14px 28px; box-shadow:0 4px 12px rgba(20,184,166,0.3); border-radius:8px;">🖨️ พิมพ์ / ดาวน์โหลด PDF</button>` 
+    : `<div style="display:flex; align-items:center; gap:15px;"><div style="color:#22c55e;font-weight:700;font-size:15px; background:#f0fdf4; padding:8px 16px; border-radius:8px; border:1px solid #bbf7d0;">ชำระเงินแล้ว ✓</div><button class="pub-btn-primary" onclick="window.print()" style="background:#0f172a; color:#fff;">🖨️ พิมพ์เอกสาร</button></div>`;
 
   document.body.insertAdjacentHTML('beforeend', `
     <div class="pub-page"> 
